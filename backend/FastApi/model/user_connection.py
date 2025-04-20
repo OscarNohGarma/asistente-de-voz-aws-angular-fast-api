@@ -1,5 +1,6 @@
 import psycopg
 
+
 class UserConnection:
     def __init__(self):
         self.conn = None
@@ -7,6 +8,7 @@ class UserConnection:
             self.conn = psycopg.connect(
                 "dbname=fast_api user=postgres password=cauich13 host=localhost port=5432"
             )
+            self.conn.execute("SET client_encoding TO 'UTF8'")
         except psycopg.OperationalError as err:
             print(f"Connection error: {err}")
             if self.conn:
@@ -14,28 +16,36 @@ class UserConnection:
 
     def read_all(self):
         with self.conn.cursor() as cur:
-            cur.execute(""" 
+            cur.execute(
+                """ 
                 SELECT * FROM "usuarios"
-            """)
+            """
+            )
             return cur.fetchall()
 
     def read_one(self, id):
         with self.conn.cursor() as cur:
-            cur.execute(""" 
+            cur.execute(
+                """ 
                 SELECT * FROM "usuarios" WHERE id = %s
-            """, (id,))
+            """,
+                (id,),
+            )
             return cur.fetchone()
 
     def write(self, data):
         try:
             with self.conn.cursor() as cur:
-                cur.execute(""" 
+                cur.execute(
+                    """ 
                     INSERT INTO "usuarios" (
                         nombre_completo, correo, contrasena, rol, fecha_creacion, activo
                     ) VALUES (
                         %(nombre_completo)s, %(correo)s, %(contrasena)s, %(rol)s, %(fecha_creacion)s, %(activo)s
                     )
-                """, data)
+                """,
+                    data,
+                )
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()
@@ -45,7 +55,8 @@ class UserConnection:
     def update(self, id, data):
         try:
             with self.conn.cursor() as cur:
-                cur.execute(""" 
+                cur.execute(
+                    """ 
                     UPDATE "usuarios"
                     SET nombre_completo = %(nombre_completo)s,
                         correo = %(correo)s,
@@ -54,7 +65,9 @@ class UserConnection:
                         fecha_creacion = %(fecha_creacion)s,
                         activo = %(activo)s
                     WHERE id = %(id)s
-                """, data)
+                """,
+                    data,
+                )
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()
@@ -64,9 +77,12 @@ class UserConnection:
     def delete(self, id):
         try:
             with self.conn.cursor() as cur:
-                cur.execute(""" 
+                cur.execute(
+                    """ 
                     DELETE FROM "usuarios" WHERE id = %s
-                """, (id,))
+                """,
+                    (id,),
+                )
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()

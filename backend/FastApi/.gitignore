@@ -21,6 +21,8 @@ __pycache__/
 
 # PyCharm
 .idea/
+model/__pycache__
+schema/__pycache__
 
 # Archivos del sistema
 .DS_Store
