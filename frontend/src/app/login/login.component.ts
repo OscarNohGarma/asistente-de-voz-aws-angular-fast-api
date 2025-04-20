@@ -41,9 +41,14 @@ export class LoginComponent implements OnInit {
     });
   }
   ngOnInit(): void {
-    this.usuarioService.getAll().subscribe((data) => {
-      this.usuarioItems = data;
-      console.log(this.usuarioItems);
+    this.usuarioService.getAll().subscribe({
+      next: (data) => {
+        this.usuarioItems = data;
+        console.log(this.usuarioItems);
+      },
+      error: (err) => {
+        console.error('Error al obtener los usuarios', err);
+      },
     });
   }
   get f() {
@@ -58,6 +63,13 @@ export class LoginComponent implements OnInit {
       return;
     }
 
+    // Si los usuarios no están cargados
+    if (this.usuarioItems.length === 0) {
+      this.loginError =
+        'No se puede iniciar sesión en este momento. Intenta más tarde.';
+      return;
+    }
+
     this.loading = true;
     this.loginError = '';
 
@@ -66,6 +78,7 @@ export class LoginComponent implements OnInit {
     const foundUser = this.usuarioItems.filter(
       (usuario) => usuario.correo == email
     );
+
     setTimeout(() => {
       if (foundUser.length != 0 && foundUser[0].contrasena == password) {
         const userRol = foundUser[0].rol;
