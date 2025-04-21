@@ -1,8 +1,9 @@
+#Sube un archivo de audio a un bucket de S3 en AWS
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
 
-# Configura tus datos
-bucket_name = 'mi-bucket-audio-asistente'  # Reemplázalo con el nombre de tu bucket
+# Configración de AWS S3
+bucket_name = 'mi-bucket-audio-asistente'  # Nombre bucket S3
 file_name = 'audio_input/test_emergencia.mp3'
 object_name = 'test_emergencia.mp3'  # Nombre con el que se guardará en el bucket
 

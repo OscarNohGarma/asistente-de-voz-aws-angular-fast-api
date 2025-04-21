@@ -1,5 +1,5 @@
 # transcribe/transcribe_handler.py
-
+# Espera la transcripción de un archivo de audio en español y devuelve el texto transcrito
 import time
 import boto3
 import uuid

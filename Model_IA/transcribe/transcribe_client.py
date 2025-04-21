@@ -1,5 +1,5 @@
 # transcribe/transcribe_client.py
-
+# Transcribe el audio que se sube a S3 y devuelve el texto transcrito
 import boto3
 import uuid
 import os

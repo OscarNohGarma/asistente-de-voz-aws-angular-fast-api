@@ -1,3 +1,5 @@
+#GENERA ARCHIVO DE AUDIO CON AWS POLLY
+#NO EJECTURAR MUCHAS VECES EL SCRIPT, PARA NO REBASAR EL LIMITE GRATUITO DE AWS
 import boto3
 
 polly = boto3.client("polly", region_name="us-east-1")

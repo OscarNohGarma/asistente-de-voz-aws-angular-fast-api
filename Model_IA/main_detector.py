@@ -1,3 +1,4 @@
+#Main Detector Lectura Un Solo Archivo de  audio_input
 from config.aws_config import KEYWORDS
 from transcribe.transcribe_handler import transcribe_audio  
 from keyword_detection.detect_keywords import detect_keywords
