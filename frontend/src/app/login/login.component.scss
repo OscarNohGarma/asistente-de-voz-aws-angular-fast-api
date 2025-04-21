@@ -17,7 +17,7 @@
 
 .logo {
   width: 300px;
-  margin-bottom: 0.5rem;
+  margin-bottom: 2rem;
 }
 
 .titulo {
@@ -39,6 +39,9 @@ input {
   border-radius: 8px;
   font-size: 1rem;
 }
+input.err {
+  border: 2px solid #ff0000;
+}
 
 label {
   font-weight: 600;
@@ -58,6 +61,7 @@ label {
   font-weight: bold;
   cursor: pointer;
   margin-top: 1rem;
+  transition: all 0.1s ease-in;
 }
 
 .btn-login:hover {
