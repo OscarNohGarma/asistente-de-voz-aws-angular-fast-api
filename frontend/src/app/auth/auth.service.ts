@@ -34,7 +34,6 @@ export class AuthService {
   getToken(): string | null {
     if (typeof window !== 'undefined' && localStorage) {
       const token = localStorage.getItem('token');
-      console.log('Leyendo token desde localStorage:', token);
       return token;
     }
     return null;

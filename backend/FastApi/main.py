@@ -7,8 +7,12 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
+from routers import alert_websocket
+
 app = FastAPI()
 conn = UserConnection()
+
+app.include_router(alert_websocket.router)
 
 app.add_middleware(
     CORSMiddleware,

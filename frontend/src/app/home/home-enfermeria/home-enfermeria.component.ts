@@ -4,11 +4,17 @@ import { AlertCardComponent } from '../../common/alert-card/alert-card.component
 import { AuthService } from '../../auth/auth.service';
 import { Router } from '@angular/router';
 import { HeaderComponent } from '../../common/header/header.component';
+import { AlertListComponent } from '../../common/alert-list/alert-list.component';
 
 @Component({
   selector: 'app-home-enfermeria',
   standalone: true,
-  imports: [CommonModule, AlertCardComponent, HeaderComponent],
+  imports: [
+    CommonModule,
+    AlertCardComponent,
+    HeaderComponent,
+    AlertListComponent,
+  ],
   templateUrl: './home-enfermeria.component.html',
   styleUrls: ['./home-enfermeria.component.scss'],
 })
