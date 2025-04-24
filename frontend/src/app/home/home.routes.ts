@@ -3,11 +3,12 @@ import { Routes } from '@angular/router';
 import { EnfermeroComponent } from './enfermero/enfermero.component';
 import { MedicoComponent } from './medico/medico.component';
 import { AuthGuard } from '../auth/auth.guard';
+import { HomeEnfermeriaComponent } from './home-enfermeria/home-enfermeria.component';
 
 export const homeRoutes: Routes = [
   {
     path: 'enfermeria',
-    component: EnfermeroComponent,
+    component: HomeEnfermeriaComponent,
     canActivate: [AuthGuard],
     data: { roles: ['enfermero'] },
   },

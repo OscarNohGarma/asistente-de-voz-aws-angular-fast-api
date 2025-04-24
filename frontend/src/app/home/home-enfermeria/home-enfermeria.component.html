@@ -1,0 +1,10 @@
+<app-header [nombreUsuario]="nombreUsuario" (cerrarSesion)="handleLogout()"></app-header>
+
+<div class="enfermeria-wrapper">
+    <h2 class="titulo">Alertas de pacientes</h2>
+    <div class="alertas-lista">
+        <app-alert-card *ngFor="let alerta of alertas" [paciente]="alerta.paciente" [fotoUrl]="alerta.fotoUrl"
+            [alerta]="alerta.alerta" [hora]="alerta.hora"></app-alert-card>
+    </div>
+    <app-alert-list />
+</div>

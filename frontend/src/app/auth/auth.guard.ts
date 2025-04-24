@@ -21,23 +21,16 @@ export class AuthGuard implements CanActivate {
     const token = this.authService.getToken();
     const rol = this.authService.getRol();
 
-    console.log('Token:', token);
-    console.log('Rol:', rol);
-
     if (!token || !rol) {
-      console.log('No autenticado, redirigiendo...');
       this.router.navigate(['/login']);
       return false;
     }
 
     const allowedRoles = route.data['roles'] as string[];
     if (allowedRoles && !allowedRoles.includes(rol)) {
-      console.log('Rol no permitido, redirigiendo...');
       this.router.navigate(['/login']);
       return false;
     }
-
-    console.log('Autenticado y rol permitido');
     return true;
   }
 }
