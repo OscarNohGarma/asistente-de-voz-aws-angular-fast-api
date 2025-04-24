@@ -1,0 +1,33 @@
+.header-container {
+  background-color: white;
+  border-bottom: 2px solid var(--primary-purple);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+}
+
+.saludo {
+  font-size: 1.1rem;
+  color: var(--title-purple);
+}
+
+.btn-salir {
+  background-color: var(--primary-purple);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.btn-salir:hover {
+  background-color: var(--primary-purple-hover);
+}

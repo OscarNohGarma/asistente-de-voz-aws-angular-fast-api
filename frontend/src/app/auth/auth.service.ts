@@ -8,12 +8,27 @@ import { Injectable } from '@angular/core';
 export class AuthService {
   constructor() {}
 
-  login(id: string, token: string, rol: string): void {
+  login(id: string, nombre: string, token: string, rol: string): void {
     if (typeof window !== 'undefined' && localStorage) {
       localStorage.setItem('id', id);
+      localStorage.setItem('nombre', nombre);
       localStorage.setItem('token', token);
       localStorage.setItem('rol', rol);
     }
+  }
+
+  getId(): string | null {
+    if (typeof window !== 'undefined' && localStorage) {
+      return localStorage.getItem('id');
+    }
+    return null;
+  }
+
+  getNombre(): string | null {
+    if (typeof window !== 'undefined' && localStorage) {
+      return localStorage.getItem('nombre');
+    }
+    return null;
   }
 
   getToken(): string | null {

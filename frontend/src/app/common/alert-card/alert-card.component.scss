@@ -1,0 +1,77 @@
+.alert-card {
+  display: flex;
+  background-color: #fff;
+  flex-direction: column;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  gap: 1rem;
+  align-items: center;
+}
+@media (min-width: 768px) {
+  .alert-card {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+.foto {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid var(--primary-purple);
+}
+
+.info {
+  flex: 1;
+
+  p {
+    margin: 0.3rem 0;
+    font-size: 1rem;
+    color: #444;
+  }
+  .nombre {
+    color: var(--primary-purple);
+    font-weight: 700;
+  }
+}
+
+.acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+
+  button {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-confirmar {
+    background-color: var(--primary-purple);
+    color: #fff;
+
+    &:hover {
+      background-color: var(--primary-purple-hover);
+    }
+  }
+
+  .btn-escalar {
+    background-color: #dc2626;
+    color: white;
+
+    &:hover {
+      background-color: #b91c1c;
+    }
+  }
+}
+@media (min-width: 768px) {
+  .acciones {
+    width: auto;
+  }
+}
