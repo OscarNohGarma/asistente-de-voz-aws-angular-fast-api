@@ -9,8 +9,8 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./alert-card.component.scss'],
 })
 export class AlertCardComponent {
-  @Input() paciente: string = '';
-  @Input() fotoUrl: string = '';
-  @Input() alerta: string = '';
+  @Input() nombre_completo: string = '';
+  @Input() foto_url: string = '';
+  @Input() edad: number = 0;
   @Input() hora: string = '';
 }
