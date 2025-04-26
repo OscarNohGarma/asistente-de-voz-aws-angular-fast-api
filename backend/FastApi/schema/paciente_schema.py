@@ -10,5 +10,9 @@ class PacienteSchema(BaseModel):
     edad: int
     habitacion: str
     diagnostico: str
-    fecha_ingreso: Optional[datetime] = None  # Opcional porque puede tomar el valor por defecto en la DB
+    fecha_ingreso: Optional[datetime] = (
+        None  # Opcional porque puede tomar el valor por defecto en la DB
+    )
     activo: bool
+    telefono_familiar: Optional[str] = None
+    correo_familiar: Optional[str] = None

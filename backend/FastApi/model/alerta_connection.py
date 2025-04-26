@@ -65,14 +65,18 @@ class AlertaConnection:
             print("Error al actualizar en la base de datos:", e)
             raise e
 
-    def delete(self, id):
+    def delete_all(self):
         try:
             with self.conn.cursor() as cur:
-                cur.execute("DELETE FROM alertas WHERE id = %s", (id,))
+                cur.execute(
+                    """ 
+                    DELETE FROM alertas
+                    """
+                )
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()
-            print("Error al eliminar en la base de datos:", e)
+            print("Error al eliminar todas las alertas en la base de datos:", e)
             raise e
 
     def __del__(self):

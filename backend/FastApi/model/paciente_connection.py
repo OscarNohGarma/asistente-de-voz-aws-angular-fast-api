@@ -41,7 +41,9 @@ class PacienteConnection:
                     INSERT INTO pacientes (
                         nombre_completo, foto_url, edad, habitacion, diagnostico, fecha_ingreso, activo
                     ) VALUES (
-                        %(nombre_completo)s, %(foto_url)s, %(edad)s, %(habitacion)s, %(diagnostico)s, %(fecha_ingreso)s, %(activo)s
+                        %(nombre_completo)s, %(foto_url)s, %(edad)s, %(habitacion)s,
+                        %(diagnostico)s, %(fecha_ingreso)s, %(activo)s,
+                        %(telefono_familiar)s, %(correo_familiar)s
                     )
                     """,
                     data,
@@ -64,7 +66,9 @@ class PacienteConnection:
                         habitacion = %(habitacion)s,
                         diagnostico = %(diagnostico)s,
                         fecha_ingreso = %(fecha_ingreso)s,
-                        activo = %(activo)s
+                        activo = %(activo)s,
+                        telefono_familiar = %(telefono_familiar)s,
+                        correo_familiar = %(correo_familiar)s
                     WHERE id = %(id)s
                     """,
                     data,
@@ -88,6 +92,20 @@ class PacienteConnection:
         except Exception as e:
             self.conn.rollback()
             print("Error al eliminar en la base de datos:", e)
+            raise e
+
+    def delete_all(self):
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(
+                    """ 
+                    DELETE FROM pacientes
+                    """
+                )
+            self.conn.commit()
+        except Exception as e:
+            self.conn.rollback()
+            print("Error al eliminar todos los pacientes en la base de datos:", e)
             raise e
 
     def __del__(self):

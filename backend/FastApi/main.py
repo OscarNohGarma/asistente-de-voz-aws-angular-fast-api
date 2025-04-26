@@ -36,9 +36,11 @@ def favicon():
     favicon_path = os.path.join("static", "favicon.ico")
     return FileResponse(favicon_path)
 
+
 # ========================
 #      RUTAS USUARIOS
 # ========================
+
 
 @app.get("/usuario")
 def get_usuarios():
@@ -101,6 +103,7 @@ def delete_usuario(id: str):
 #      RUTAS PACIENTES
 # ========================
 
+
 @app.get("/paciente")
 def get_pacientes():
     items = []
@@ -115,6 +118,8 @@ def get_pacientes():
                 "diagnostico": data[5],
                 "fecha_ingreso": str(data[6]),
                 "activo": data[7],
+                "telefono_familiar": data[8],
+                "correo_familiar": data[9],
             }
         )
     return JSONResponse(content=items, media_type="application/json; charset=utf-8")
@@ -133,6 +138,8 @@ def get_paciente(id: str):
             "diagnostico": data[5],
             "fecha_ingreso": str(data[6]),
             "activo": data[7],
+            "telefono_familiar": data[8],
+            "correo_familiar": data[9],
         }
     else:
         return {"message": "Paciente no encontrado"}
@@ -151,7 +158,10 @@ def update_paciente(id: str, paciente_data: PacienteSchema):
     data = paciente_data.dict()
     data["id"] = id
     paciente_conn.update(id, data)
-    return {"message": "Paciente actualizado correctamente", "paciente_actualizado": data}
+    return {
+        "message": "Paciente actualizado correctamente",
+        "paciente_actualizado": data,
+    }
 
 
 @app.delete("/paciente/{id}")
@@ -160,26 +170,48 @@ def delete_paciente(id: str):
     return {"message": f"Paciente con id {id} eliminado correctamente"}
 
 
+@app.delete("/paciente")
+def delete_all_pacientes():
+    paciente_conn.delete_all()
+    return {"message": "Todos los pacientes han sido eliminados correctamente"}
+
+
 # ========================
 #      RUTAS ALERTAS
 # ========================
 
+
 @app.get("/alerta")
 def get_alertas():
-    items = []
-    for data in alerta_conn.read_all():
-        items.append(
-            {
-                "id": data[0],
-                "id_pacientes": data[1],
-                "tipo": data[2],
-                "hora": data[3],
-                "estado": data[4],
-                "confirmada_por": data[5],
-                "fecha_confirmacion": str(data[6]) if data[6] else None,
-            }
+    with conn.conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT 
+                a.id, a.id_pacientes, a.tipo, a.hora, a.estado, a.confirmada_por, a.fecha_confirmacion,
+                p.nombre_completo, p.foto_url, p.habitacion, p.edad
+            FROM alertas a
+            JOIN pacientes p ON a.id_pacientes::int = p.id
+        """
         )
-    return JSONResponse(content=items, media_type="application/json; charset=utf-8")
+        alertas = []
+        for row in cur.fetchall():
+            alerta = {
+                "id": row[0],
+                "id_pacientes": row[1],
+                "tipo": row[2],
+                "hora": row[3],
+                "estado": row[4],
+                "confirmada_por": row[5],
+                "fecha_confirmacion": row[6],
+                "paciente": {
+                    "nombre_completo": row[7],
+                    "foto_url": row[8],
+                    "habitacion": row[9],
+                    "edad": row[10],
+                },
+            }
+            alertas.append(alerta)
+        return alertas
 
 
 @app.get("/alerta/{id}")
@@ -219,3 +251,9 @@ def update_alerta(id: str, alerta_data: AlertaSchema):
 def delete_alerta(id: str):
     alerta_conn.delete(id)
     return {"message": f"Alerta con id {id} eliminada correctamente"}
+
+
+@app.delete("/alerta")
+def delete_all_alertas():
+    alerta_conn.delete_all()
+    return {"message": "Todas las alertas han sido eliminados correctamente"}

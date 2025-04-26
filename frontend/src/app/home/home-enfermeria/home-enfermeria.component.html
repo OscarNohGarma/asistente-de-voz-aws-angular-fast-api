@@ -3,8 +3,9 @@
 <div class="enfermeria-wrapper">
     <h2 class="titulo">Alertas de pacientes</h2>
     <div class="alertas-lista">
-        <app-alert-card *ngFor="let alerta of alertas" [paciente]="alerta.paciente" [fotoUrl]="alerta.fotoUrl"
-            [alerta]="alerta.alerta" [hora]="alerta.hora"></app-alert-card>
+        <app-alert-card *ngFor="let alerta of alertaItems" [nombre_completo]="alerta.paciente?.nombre_completo || ''"
+            [foto_url]="alerta.paciente?.foto_url || ''" [edad]="alerta.paciente?.edad || 0" [hora]="alerta.hora || ''">
+        </app-alert-card>
     </div>
     <app-alert-list />
 </div>
