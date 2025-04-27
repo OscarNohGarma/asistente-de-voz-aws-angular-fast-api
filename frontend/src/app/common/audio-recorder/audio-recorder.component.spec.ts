@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AlertListComponent } from './alert-list.component';
+import { AudioRecorderComponent } from './audio-recorder.component';
 
-describe('AlertListComponent', () => {
-  let component: AlertListComponent;
-  let fixture: ComponentFixture<AlertListComponent>;
+describe('AudioRecorderComponent', () => {
+  let component: AudioRecorderComponent;
+  let fixture: ComponentFixture<AudioRecorderComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AlertListComponent]
+      imports: [AudioRecorderComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(AlertListComponent);
+    fixture = TestBed.createComponent(AudioRecorderComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

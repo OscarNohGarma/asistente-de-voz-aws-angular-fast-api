@@ -85,6 +85,7 @@ class PacienteConnection:
                 cur.execute(
                     """ 
                     DELETE FROM pacientes WHERE id = %s
+                    
                     """,
                     (id,),
                 )
@@ -99,7 +100,8 @@ class PacienteConnection:
             with self.conn.cursor() as cur:
                 cur.execute(
                     """ 
-                    DELETE FROM pacientes
+                    DELETE FROM pacientes;
+                    ALTER SEQUENCE pacientes_id_seq RESTART WITH 1;
                     """
                 )
             self.conn.commit()

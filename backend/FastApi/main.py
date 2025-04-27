@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from routers import audio_detection  # Asegúrate de importar tu router
 import os
 
 from routers import alert_websocket
@@ -29,6 +30,9 @@ app.add_middleware(
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Montar rutas
+app.include_router(audio_detection.router)
 
 
 @app.get("/favicon.ico")

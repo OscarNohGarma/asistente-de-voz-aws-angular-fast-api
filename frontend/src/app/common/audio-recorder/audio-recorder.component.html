@@ -1,0 +1,13 @@
+<div class="audio-recorder">
+    <h2>Grabadora de Audio</h2>
+
+    <!-- Botón para iniciar la grabación -->
+    <button (click)="startRecording()" [disabled]="isRecording">Iniciar Grabación</button>
+
+    <!-- Botón para detener la grabación -->
+    <button (click)="stopRecording()" [disabled]="!isRecording">Detener Grabación</button>
+
+    <!-- Indicador de grabación -->
+    <p *ngIf="isRecording">🎤 Grabando...</p>
+    <p *ngIf="!isRecording && lastRecording">🎶 Última grabación enviada</p>
+</div>

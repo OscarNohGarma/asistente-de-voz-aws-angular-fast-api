@@ -4,10 +4,12 @@ import boto3
 import uuid
 import os
 
-from config.aws_config import AWS_REGION, S3_BUCKET_NAME
+# SE TUVO QUE AGREGAR el modulo MODEL_IA para que el back pudiera reconocer las bibliotecas
+from Model_IA.config.aws_config import AWS_REGION, S3_BUCKET_NAME
 
-s3 = boto3.client('s3', region_name=AWS_REGION)
-transcribe = boto3.client('transcribe', region_name=AWS_REGION)
+s3 = boto3.client("s3", region_name=AWS_REGION)
+transcribe = boto3.client("transcribe", region_name=AWS_REGION)
+
 
 def upload_audio_to_s3(audio_path):
     audio_filename = os.path.basename(audio_path)

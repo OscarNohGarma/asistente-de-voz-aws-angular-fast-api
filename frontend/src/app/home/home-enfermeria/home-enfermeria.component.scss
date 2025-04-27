@@ -22,3 +22,55 @@
   width: 100%;
   max-width: 700px;
 }
+
+// ---------
+.alerta {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background-color: #fee2e2;
+  border-left: 6px solid #dc2626;
+  padding: 1.5rem 2rem 1.5rem; // más padding abajo para no tapar la barra
+  margin: 0.5rem 0;
+  border-radius: 12px;
+  box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.2);
+  animation: fadeInUp 0.5s ease;
+  font-weight: 700;
+  color: #b91c1c;
+  z-index: 9999;
+  max-width: 400px;
+  font-size: 1.2rem;
+  overflow: hidden;
+}
+
+.alerta-timer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background-color: #dc2626;
+  width: 100%; /* inicia llena */
+  transform-origin: right;
+  animation: shrinkTimer 5s linear forwards;
+}
+
+// Animaciones
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shrinkTimer {
+  0% {
+    transform: scaleX(1); /* tamaño completo */
+  }
+  100% {
+    transform: scaleX(0); /* tamaño vacío */
+  }
+}
