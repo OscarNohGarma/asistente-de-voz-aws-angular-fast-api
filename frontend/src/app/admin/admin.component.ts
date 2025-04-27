@@ -4,11 +4,12 @@ import { AuthService } from '../auth/auth.service';
 import { AlertSocketService } from '../core/services/alert-socket.service';
 import { AlertaService } from '../core/services/alerta.service';
 import { Alerta } from '../core/models/alertas';
+import { AudioRecorderComponent } from '../common/audio-recorder/audio-recorder.component';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, AudioRecorderComponent],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.scss',
 })
