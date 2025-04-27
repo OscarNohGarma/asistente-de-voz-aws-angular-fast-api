@@ -28,10 +28,12 @@ export class AdminComponent {
     console.log('Enviando alerta desde admin...');
     this.alertSocketService.sendMessage('¡Paciente necesita ayuda!');
 
+    const numeroAleatorio = Math.floor(Math.random() * 5) + 1;
+
     // Aquí creamos una nueva alerta
     const nuevaAlerta = new Alerta(
       0, // ID de la alerta
-      '15', // id_pacientes como string
+      numeroAleatorio.toString(), // id_pacientes como string
       '15:20', // Hora
       'pendiente', // Estado
       '', // Tipo

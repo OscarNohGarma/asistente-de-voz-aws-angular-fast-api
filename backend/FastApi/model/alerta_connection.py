@@ -70,7 +70,8 @@ class AlertaConnection:
             with self.conn.cursor() as cur:
                 cur.execute(
                     """ 
-                    DELETE FROM alertas
+                    DELETE FROM alertas;
+                    ALTER SEQUENCE alertas_id_seq RESTART WITH 1;
                     """
                 )
             self.conn.commit()

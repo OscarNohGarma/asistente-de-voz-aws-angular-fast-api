@@ -7,5 +7,11 @@
             [foto_url]="alerta.paciente?.foto_url || ''" [edad]="alerta.paciente?.edad || 0" [hora]="alerta.hora || ''">
         </app-alert-card>
     </div>
-    <app-alert-list />
+
 </div>
+<!-- Mensajes emergentes -->
+<div *ngFor="let m of mensajes" class="alerta">
+    🩺 {{ m }}
+    <div class="alerta-timer">
+    </div>
+</div> <!-- Nueva barra de tiempo -->
