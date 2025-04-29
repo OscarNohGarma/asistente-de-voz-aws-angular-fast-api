@@ -6,7 +6,7 @@ class AlertaConnection:
         self.conn = None
         try:
             self.conn = psycopg.connect(
-                "dbname=fast_api user=postgres password=cauich13 host=localhost port=5432"
+                "dbname=fast_api user=postgres password=n20pyali host=localhost port=5432"
             )
             self.conn.execute("SET client_encoding TO 'UTF8'")
         except psycopg.OperationalError as err:

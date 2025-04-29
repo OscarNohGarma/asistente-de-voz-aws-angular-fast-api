@@ -32,7 +32,7 @@ export class AudioRecorderService {
   async stopRecording(): Promise<Blob> {
     return new Promise((resolve) => {
       this.mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
+        const audioBlob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType });
         resolve(audioBlob);
       };
       this.mediaRecorder.stop();
