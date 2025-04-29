@@ -13,4 +13,5 @@ export class AlertCardComponent {
   @Input() foto_url: string = '';
   @Input() edad: number = 0;
   @Input() hora: string = '';
+  @Input() nueva: boolean = true;
 }

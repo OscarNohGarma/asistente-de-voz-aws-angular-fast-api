@@ -30,9 +30,12 @@ class AlertaConnection:
                 cur.execute(
                     """
                     INSERT INTO alertas (
-                        id_pacientes, tipo, hora, estado, confirmada_por, fecha_confirmacion
+                        id_pacientes, tipo, hora, estado, confirmada_por,
+                        fecha_confirmacion, nueva, palabras_clave
                     ) VALUES (
-                        %(id_pacientes)s, %(tipo)s, %(hora)s, %(estado)s, %(confirmada_por)s, %(fecha_confirmacion)s
+                        %(id_pacientes)s, %(tipo)s, %(hora)s, %(estado)s,
+                        %(confirmada_por)s, %(fecha_confirmacion)s,
+                        %(nueva)s, %(palabras_clave)s
                     )
                     """,
                     data,
@@ -54,7 +57,9 @@ class AlertaConnection:
                         hora = %(hora)s,
                         estado = %(estado)s,
                         confirmada_por = %(confirmada_por)s,
-                        fecha_confirmacion = %(fecha_confirmacion)s
+                        fecha_confirmacion = %(fecha_confirmacion)s,
+                        nueva = %(nueva)s,
+                        palabras_clave = %(palabras_clave)s
                     WHERE id = %(id)s
                     """,
                     data,
