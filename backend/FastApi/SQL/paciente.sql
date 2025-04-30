@@ -8,7 +8,8 @@ CREATE TABLE pacientes (
     fecha_ingreso TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
     activo BOOLEAN NOT NULL,
     telefono_familiar VARCHAR(20),             -- Campo opcional
-    correo_familiar VARCHAR(100)               -- Campo opcional                
+    correo_familiar VARCHAR(100),               -- Campo opcional                
+    embedding TEXT,
 );
 
 SELECT * FROM pacientes;

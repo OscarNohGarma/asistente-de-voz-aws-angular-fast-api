@@ -124,6 +124,7 @@ def get_pacientes():
                 "activo": data[7],
                 "telefono_familiar": data[8],
                 "correo_familiar": data[9],
+                # "embedding": data[10],
             }
         )
     return JSONResponse(content=items, media_type="application/json; charset=utf-8")
