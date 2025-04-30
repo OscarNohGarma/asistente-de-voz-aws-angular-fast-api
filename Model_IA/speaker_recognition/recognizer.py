@@ -10,32 +10,40 @@ from scipy.spatial.distance import cosine
 # Inicializar el encoder
 encoder = VoiceEncoder()
 
+from dotenv import load_dotenv
+
+dotenv_path = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "../../backend/FastApi/.env")
+)
+load_dotenv(dotenv_path)
+
+
 # Cargar las voces de referencia
 def load_patient_embeddings():
     embeddings = {}
     try:
         conn = psycopg2.connect(
-            dbname="fast_api",
-            user="postgres",
-            password="n20pyali",
-            host="localhost",  # o el hostname de tu contenedor
-            port="5432"
+            dbname=os.getenv("DB_NAME"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            host=os.getenv("DB_HOST"),
+            port=os.getenv("DB_PORT"),
         )
         cur = conn.cursor()
-        cur.execute("SELECT id, nombre_completo, embedding FROM pacientes WHERE embedding IS NOT NULL AND activo = TRUE")
+        cur.execute(
+            "SELECT id, nombre_completo, embedding FROM pacientes WHERE embedding IS NOT NULL AND activo = TRUE"
+        )
 
         for paciente_id, nombre, embedding_str in cur.fetchall():
             embedding = np.array(json.loads(embedding_str))
-            embeddings[paciente_id] = {
-                "nombre": nombre,
-                "embedding": embedding
-            }
+            embeddings[paciente_id] = {"nombre": nombre, "embedding": embedding}
 
         cur.close()
         conn.close()
     except Exception as e:
         print(f"Error al cargar embeddings desde la BD: {e}")
     return embeddings
+
 
 # Comparar voz capturada contra voces registradas
 def identify_patient(audio_path, patient_embeddings, threshold=0.6):
@@ -58,10 +66,7 @@ def identify_patient(audio_path, patient_embeddings, threshold=0.6):
 
         if best_score < threshold:
             matched_info = patient_embeddings[best_match_id]
-            return {
-                "id": best_match_id,
-                "nombre": matched_info["nombre"]
-            }
+            return {"id": best_match_id, "nombre": matched_info["nombre"]}
         else:
             return None
     except Exception as e:

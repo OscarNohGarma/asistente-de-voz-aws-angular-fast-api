@@ -3,21 +3,33 @@ import json
 import psycopg2
 from resemblyzer import VoiceEncoder, preprocess_wav
 
+
+from dotenv import load_dotenv
+
+dotenv_path = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "../../backend/FastApi/.env")
+)
+load_dotenv(dotenv_path)
+
 # Inicializa el encoder
 encoder = VoiceEncoder()
-
+print("DB_NAME:", os.getenv("DB_NAME"))
+print("DB_USER:", os.getenv("DB_USER"))
+print("DB_PASSWORD:", os.getenv("DB_PASSWORD"))
 # Conecta a tu base de datos PostgreSQL
 conn = psycopg2.connect(
-            dbname="fast_api",
-            user="postgres",
-            password="n20pyali",
-            host="localhost",  # o el hostname de tu contenedor
-            port="5432"
+    dbname=os.getenv("DB_NAME"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASSWORD"),
+    host=os.getenv("DB_HOST"),
+    port=os.getenv("DB_PORT"),
 )
 cur = conn.cursor()
 
 # Carpeta con los archivos de voz
-audio_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "audio_reference"))
+audio_folder = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "audio_reference")
+)
 
 # Procesar cada archivo de voz
 for filename in os.listdir(audio_folder):
@@ -31,15 +43,21 @@ for filename in os.listdir(audio_folder):
         nombre_archivo = os.path.splitext(filename)[0]
 
         # Buscar el ID del paciente por nombre
-        cur.execute("SELECT id FROM pacientes WHERE LOWER(nombre_completo) = LOWER(%s)", (nombre_archivo,))
+        cur.execute(
+            "SELECT id FROM pacientes WHERE LOWER(nombre_completo) = LOWER(%s)",
+            (nombre_archivo,),
+        )
         result = cur.fetchone()
         if result:
             id_paciente = result[0]
-            cur.execute("""
+            cur.execute(
+                """
                 UPDATE pacientes
                 SET embedding = %s
                 WHERE id = %s
-            """, (embedding_str, id_paciente))
+            """,
+                (embedding_str, id_paciente),
+            )
             print(f"✅ Embedding actualizado para {nombre_archivo}")
         else:
             print(f"⚠️ Paciente '{nombre_archivo}' no encontrado en la BD.")

@@ -14,17 +14,27 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.
 from Model_IA.transcribe.transcribe_handler import transcribe_audio
 from Model_IA.keyword_detection.detect_keywords import detect_keywords
 from Model_IA.config.aws_config import KEYWORDS
-from Model_IA.speaker_recognition.recognizer import identify_patient, load_patient_embeddings
+from Model_IA.speaker_recognition.recognizer import (
+    identify_patient,
+    load_patient_embeddings,
+)
+
+from dotenv import load_dotenv
+
+dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+load_dotenv(dotenv_path)
 
 router = APIRouter()
 
 # Cargar embeddings de pacientes
 patient_embeddings = load_patient_embeddings()
 
+
 # Función para convertir WebM a WAV
 def convert_webm_to_wav(input_path, output_path):
     audio = AudioSegment.from_file(input_path, format="webm")
     audio.export(output_path, format="wav")
+
 
 @router.post("/audio/detectar-palabras")
 async def detectar_palabras(audio_file: UploadFile = File(...)):
@@ -61,18 +71,21 @@ async def detectar_palabras(audio_file: UploadFile = File(...)):
                 new_embedding_str = json.dumps(new_embedding.tolist())
 
                 conn = psycopg2.connect(
-                    dbname="fast_api",
-                    user="postgres",
-                    password="n20pyali",
-                    host="localhost",
-                    port="5432"
+                    dbname=os.getenv("DB_NAME"),
+                    user=os.getenv("DB_USER"),
+                    password=os.getenv("DB_PASSWORD"),
+                    host=os.getenv("DB_HOST"),
+                    port=os.getenv("DB_PORT"),
                 )
                 cur = conn.cursor()
-                cur.execute("""
+                cur.execute(
+                    """
                     UPDATE pacientes
                     SET embedding = %s
                     WHERE id = %s
-                """, (new_embedding_str, patient_info["id"]))
+                """,
+                    (new_embedding_str, patient_info["id"]),
+                )
                 conn.commit()
                 cur.close()
                 conn.close()
@@ -87,7 +100,7 @@ async def detectar_palabras(audio_file: UploadFile = File(...)):
         return {
             "transcripcion": transcript,
             "palabras_clave": keywords_found,
-            "paciente": patient_info
+            "paciente": patient_info,
         }
 
     except Exception as e:
