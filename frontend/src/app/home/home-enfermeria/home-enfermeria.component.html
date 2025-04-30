@@ -4,10 +4,10 @@
     <h2 class="titulo">Alertas de pacientes</h2>
     <div class="alertas-lista">
         <app-alert-card *ngFor="let alerta of alertaItems" [nombre_completo]="alerta.paciente?.nombre_completo || ''"
-            [foto_url]="alerta.paciente?.foto_url || ''" [edad]="alerta.paciente?.edad || 0" [hora]="alerta.hora || ''">
+            [foto_url]="alerta.paciente?.foto_url || ''" [edad]="alerta.paciente?.edad || 0" [hora]="alerta.hora || ''"
+            [nueva]="alerta.nueva || false" [ngClass]="{ 'alerta-nueva': alerta.nueva }">
         </app-alert-card>
     </div>
-
 </div>
 <!-- Mensajes emergentes -->
 <div *ngFor="let m of mensajes" class="alerta">

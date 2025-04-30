@@ -5,5 +5,7 @@ CREATE TABLE alertas (
     hora VARCHAR(100),
     estado VARCHAR(100) NOT NULL DEFAULT 'pendiente',
     confirmada_por VARCHAR(100),
-    fecha_confirmacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    fecha_confirmacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    nueva BOOLEAN NOT NULL DEFAULT TRUE,
+    palabras_clave TEXT[]
 );

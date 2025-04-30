@@ -26,26 +26,40 @@ export class AdminComponent {
     this.router.navigate(['/login']);
   }
   enviar() {
-    console.log('Enviando alerta desde admin...');
-    this.alertSocketService.sendMessage('¡Paciente necesita ayuda!');
-
     const numeroAleatorio = Math.floor(Math.random() * 5) + 1;
+
+    // Función para generar una hora aleatoria
+    function generarHoraAleatoria(): string {
+      const hora = Math.floor(Math.random() * 24); // de 0 a 23
+      const minuto = Math.floor(Math.random() * 60); // de 0 a 59
+
+      // Formatear con ceros a la izquierda si es necesario
+      const horaFormateada = hora.toString().padStart(2, '0');
+      const minutoFormateado = minuto.toString().padStart(2, '0');
+
+      return `${horaFormateada}:${minutoFormateado}`;
+    }
 
     // Aquí creamos una nueva alerta
     const nuevaAlerta = new Alerta(
       0, // ID de la alerta
       numeroAleatorio.toString(), // id_pacientes como string
-      '15:20', // Hora
+      generarHoraAleatoria(), // Hora aleatoria
       'pendiente', // Estado
       '', // Tipo
       '', // Confirmada por
-      '2025-04-25T17:43:45.521387' // Fecha de confirmación (en formato ISO 8601)
+      new Date().toISOString(), // Fecha de confirmación actual
+      undefined,
+      true,
+      ['emergencia', '911']
     );
 
     // Ahora enviamos la alerta al backend
     this.alertaService.add(nuevaAlerta).subscribe({
       next: (response) => {
         console.log('Alerta enviada con éxito', response);
+        console.log('Enviando alerta desde admin...');
+        this.alertSocketService.sendMessage('¡Un paciente necesita ayuda!');
       },
       error: (err) => {
         console.error('Error al enviar la alerta', err);

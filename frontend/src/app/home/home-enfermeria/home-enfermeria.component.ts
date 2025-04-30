@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AlertCardComponent } from '../../common/alert-card/alert-card.component';
 import { AuthService } from '../../auth/auth.service';
@@ -22,15 +22,20 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
   alertaItems: Alerta[] = [];
   mensajes: string[] = [];
   private sub!: Subscription;
+  userInteracted = false;
 
   constructor(
     private router: Router,
     private authService: AuthService,
     private alertaService: AlertaService,
-    private alertSocketService: AlertSocketService
+    private alertSocketService: AlertSocketService,
+    private ngZone: NgZone // Inyectamos NgZone
   ) {}
 
   ngOnInit(): void {
+    window.addEventListener('click', () => {
+      this.userInteracted = true;
+    });
     const nombre = this.authService.getNombre();
     this.nombreUsuario = nombre ?? 'Usuario';
 
@@ -43,7 +48,9 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
       // Reproducir sonido de alerta
       this.reproducirSonido();
       // Recargar las alertas
-      this.cargarAlertas();
+      this.ngZone.run(() => {
+        this.cargarAlertas();
+      });
 
       setTimeout(() => {
         this.mensajes.shift();
@@ -64,6 +71,13 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.alertaItems = data
           .filter((alerta) => alerta.estado === 'pendiente')
+          .sort((a, b) => {
+            const horaA = a.hora.split(':').map(Number);
+            const horaB = b.hora.split(':').map(Number);
+            return horaA[0] !== horaB[0]
+              ? horaA[0] - horaB[0]
+              : horaA[1] - horaB[1];
+          })
           .reverse();
         console.log('Alertas actualizadas:', this.alertaItems);
       },
@@ -73,6 +87,7 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
     });
   }
   reproducirSonido(): void {
+    if (!this.userInteracted) return; // Evita reproducir si no ha habido interacción
     const audio = new Audio();
     audio.src = '../../../assets/sounds/alerta.mp3'; // Asegúrate de tener este archivo
     audio.load();
