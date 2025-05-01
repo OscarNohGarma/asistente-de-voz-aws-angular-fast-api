@@ -1,7 +1,7 @@
 CREATE TABLE pacientes (
     id SERIAL PRIMARY KEY,                     
     nombre_completo VARCHAR(100),              
-    foto_url VARCHAR(600) UNIQUE NOT NULL,     
+    foto_url VARCHAR(255),  -- El nombre del archivo o la ruta relativa de la foto    
     edad INTEGER NOT NULL,                     
     habitacion VARCHAR(100) NOT NULL,          
     diagnostico VARCHAR(100) NOT NULL,         
