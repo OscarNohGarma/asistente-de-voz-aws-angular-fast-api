@@ -193,7 +193,8 @@ def get_alertas():
             """
             SELECT 
                 a.id, a.id_pacientes, a.tipo, a.hora, a.estado, a.confirmada_por, a.fecha_confirmacion,
-                p.nombre_completo, p.foto_url, p.habitacion, p.edad
+                a.nueva, a.palabras_clave,
+                p.nombre_completo, p.foto_url, p.habitacion, p.edad, p.diagnostico
             FROM alertas a
             JOIN pacientes p ON a.id_pacientes::int = p.id
         """
@@ -208,11 +209,14 @@ def get_alertas():
                 "estado": row[4],
                 "confirmada_por": row[5],
                 "fecha_confirmacion": row[6],
+                "nueva": row[7],
+                "palabras_clave": row[8],
                 "paciente": {
-                    "nombre_completo": row[7],
-                    "foto_url": row[8],
-                    "habitacion": row[9],
-                    "edad": row[10],
+                    "nombre_completo": row[9],
+                    "foto_url": row[10],
+                    "habitacion": row[11],
+                    "edad": row[12],
+                    "diagnostico": row[13],
                 },
             }
             alertas.append(alerta)
@@ -221,19 +225,41 @@ def get_alertas():
 
 @app.get("/alerta/{id}")
 def get_alerta(id: str):
-    data = alerta_conn.read_one(id)
-    if data:
-        return {
-            "id": data[0],
-            "id_pacientes": data[1],
-            "tipo": data[2],
-            "hora": data[3],
-            "estado": data[4],
-            "confirmada_por": data[5],
-            "fecha_confirmacion": str(data[6]) if data[6] else None,
-        }
-    else:
-        return {"message": "Alerta no encontrada"}
+    with conn.conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT 
+                a.id, a.id_pacientes, a.tipo, a.hora, a.estado, a.confirmada_por, a.fecha_confirmacion,
+                a.nueva, a.palabras_clave,
+                p.nombre_completo, p.foto_url, p.habitacion, p.edad, p.diagnostico
+            FROM alertas a
+            JOIN pacientes p ON a.id_pacientes::int = p.id
+            WHERE a.id = %s
+            """,
+            (id,),
+        )
+        row = cur.fetchone()
+        if row:
+            return {
+                "id": row[0],
+                "id_pacientes": row[1],
+                "tipo": row[2],
+                "hora": row[3],
+                "estado": row[4],
+                "confirmada_por": row[5],
+                "fecha_confirmacion": str(row[6]) if row[6] else None,
+                "nueva": row[7],
+                "palabras_clave": row[8],
+                "paciente": {
+                    "nombre_completo": row[9],
+                    "foto_url": row[10],
+                    "habitacion": row[11],
+                    "edad": row[12],
+                    "diagnostico": row[13],
+                },
+            }
+        else:
+            return {"message": "Alerta no encontrada"}
 
 
 @app.post("/alerta")

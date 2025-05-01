@@ -1,32 +1,3 @@
-// import { BaseModel } from '../../common/baseModel';
-
-// export class Alerta extends BaseModel {
-//   id_pacientes: string;
-//   hora: string;
-//   estado: string;
-//   tipo?: string;
-//   confirmada_por?: string;
-//   fecha_confirmacion?: string;
-
-//   constructor(
-//     id: number,
-//     id_pacientes: string,
-//     hora: string,
-//     estado: string,
-//     tipo?: string,
-//     confirmada_por?: string,
-//     fecha_confirmacion?: string
-//   ) {
-//     super(id);
-//     this.id_pacientes = id_pacientes;
-//     this.hora = hora;
-//     this.estado = estado;
-//     this.tipo = tipo ?? '';
-//     this.confirmada_por = confirmada_por ?? '';
-//     this.fecha_confirmacion = fecha_confirmacion ?? '';
-//   }
-// }
-
 import { BaseModel } from '../../common/baseModel';
 
 export class Alerta extends BaseModel {
@@ -37,6 +8,8 @@ export class Alerta extends BaseModel {
   confirmada_por?: string;
   fecha_confirmacion?: string;
   paciente?: PacienteMini;
+  nueva?: boolean;
+  palabras_clave?: string[];
 
   constructor(
     id: number,
@@ -46,7 +19,9 @@ export class Alerta extends BaseModel {
     tipo?: string,
     confirmada_por?: string,
     fecha_confirmacion?: string,
-    paciente?: PacienteMini
+    paciente?: PacienteMini,
+    nueva?: boolean,
+    palabras_clave?: string[]
   ) {
     super(id);
     this.id_pacientes = id_pacientes;
@@ -56,6 +31,8 @@ export class Alerta extends BaseModel {
     this.confirmada_por = confirmada_por ?? '';
     this.fecha_confirmacion = fecha_confirmacion ?? '';
     this.paciente = paciente;
+    this.nueva = nueva ?? true; // por defecto nueva en true
+    this.palabras_clave = palabras_clave ?? [];
   }
 }
 
@@ -64,4 +41,5 @@ export interface PacienteMini {
   foto_url: string;
   habitacion: string;
   edad: number;
+  diagnostico: string;
 }
