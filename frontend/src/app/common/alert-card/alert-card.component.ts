@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -14,4 +14,9 @@ export class AlertCardComponent {
   @Input() edad: number = 0;
   @Input() hora: string = '';
   @Input() nueva: boolean = true;
+  @Output() cardClick = new EventEmitter<void>();
+
+  handleClick(): void {
+    this.cardClick.emit();
+  }
 }

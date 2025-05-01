@@ -8,11 +8,24 @@ import { AlertaService } from '../../core/services/alerta.service';
 import { Alerta } from '../../core/models/alertas';
 import { AlertSocketService } from '../../core/services/alert-socket.service';
 import { Subscription } from 'rxjs';
+import { error } from 'node:console';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 
 @Component({
   selector: 'app-home-enfermeria',
   standalone: true,
-  imports: [CommonModule, AlertCardComponent, HeaderComponent],
+  imports: [
+    CommonModule,
+    AlertCardComponent,
+    HeaderComponent,
+    ReactiveFormsModule,
+  ],
   providers: [AlertaService],
   templateUrl: './home-enfermeria.component.html',
   styleUrls: ['./home-enfermeria.component.scss'],
@@ -23,14 +36,23 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
   mensajes: string[] = [];
   private sub!: Subscription;
   userInteracted = false;
+  overlayOpen = false;
+  alertaSeleccionada?: Alerta;
+  sendForm: FormGroup;
+  submitted = false;
 
   constructor(
     private router: Router,
     private authService: AuthService,
     private alertaService: AlertaService,
     private alertSocketService: AlertSocketService,
-    private ngZone: NgZone // Inyectamos NgZone
-  ) {}
+    private ngZone: NgZone, // Inyectamos NgZone
+    private fb: FormBuilder
+  ) {
+    this.sendForm = this.fb.group({
+      tipo: ['', [Validators.required]],
+    });
+  }
 
   ngOnInit(): void {
     window.addEventListener('click', () => {
@@ -93,4 +115,95 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
     audio.load();
     audio.play();
   }
+
+  handleOpenOverlay(alerta: Alerta): void {
+    this.alertaSeleccionada = alerta;
+    this.overlayOpen = true;
+    console.log(alerta.id);
+    const alertaActualizada = { ...alerta, nueva: false };
+    this.alertaService
+      .update(alerta.id.toString(), alertaActualizada)
+      .subscribe({
+        next: (data) => {
+          console.log('Alertas actualizada');
+          this.cargarAlertas();
+        },
+        error: (error) => {
+          console.log('Error al actualizar');
+        },
+      });
+  }
+
+  cerrarOverlay(): void {
+    this.overlayOpen = false;
+    this.alertaSeleccionada = undefined;
+  }
+
+  confirmarAlerta(): void {
+    // this.alertaService.confirmar(this.alertaSeleccionada.id).subscribe(() => {
+    //   this.cargarAlertas();
+    //   this.cerrarOverlay();
+    // });
+  }
+
+  escalarAlerta(): void {
+    if (!this.alertaSeleccionada) return;
+    // this.alertaService.escalar(this.alertaSeleccionada.id).subscribe(() => {
+    //   this.cargarAlertas();
+    //   this.cerrarOverlay();
+    // });
+  }
+
+  onSubmit() {
+    this.submitted = true;
+
+    if (this.sendForm.invalid) {
+      this.sendForm.markAllAsTouched();
+      return;
+    }
+    if (!this.alertaSeleccionada) return;
+
+    const { tipo } = this.sendForm.value;
+
+    // Obtener timestamp con 6 dígitos en los milisegundos (microsegundos simulados)
+    let fechaConfirmacion = new Date().toISOString(); // Ej: "2025-04-30T23:15:56.611Z"
+    fechaConfirmacion = fechaConfirmacion.replace('Z', '000'); // convierte a: "2025-04-30T23:15:56.611000"
+
+    const alertaActualizada = {
+      ...this.alertaSeleccionada,
+      tipo,
+      estado: 'confirmada',
+      confirmada_por: this.authService.getNombre()?.toString(),
+      fecha_confirmacion: getLocalISOStringWithMicroseconds(),
+    };
+    this.alertaService
+      .update(alertaActualizada.id.toString(), alertaActualizada)
+      .subscribe({
+        next: (data) => {
+          console.log('Alertas actualizada');
+          this.cargarAlertas();
+          this.cerrarOverlay();
+        },
+        error: (error) => {
+          console.log('Error al actualizar');
+        },
+      });
+  }
+  get f() {
+    return this.sendForm.controls;
+  }
+}
+function getLocalISOStringWithMicroseconds(): string {
+  const now = new Date();
+  const pad = (n: number, width = 2) => n.toString().padStart(width, '0');
+
+  const year = now.getFullYear();
+  const month = pad(now.getMonth() + 1);
+  const day = pad(now.getDate());
+  const hour = pad(now.getHours());
+  const minute = pad(now.getMinutes());
+  const second = pad(now.getSeconds());
+  const millis = now.getMilliseconds().toString().padStart(3, '0');
+
+  return `${year}-${month}-${day}T${hour}:${minute}:${second}.${millis}000`;
 }

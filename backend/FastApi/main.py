@@ -194,7 +194,7 @@ def get_alertas():
             SELECT 
                 a.id, a.id_pacientes, a.tipo, a.hora, a.estado, a.confirmada_por, a.fecha_confirmacion,
                 a.nueva, a.palabras_clave,
-                p.nombre_completo, p.foto_url, p.habitacion, p.edad
+                p.nombre_completo, p.foto_url, p.habitacion, p.edad, p.diagnostico
             FROM alertas a
             JOIN pacientes p ON a.id_pacientes::int = p.id
         """
@@ -216,6 +216,7 @@ def get_alertas():
                     "foto_url": row[10],
                     "habitacion": row[11],
                     "edad": row[12],
+                    "diagnostico": row[13],
                 },
             }
             alertas.append(alerta)
@@ -230,7 +231,7 @@ def get_alerta(id: str):
             SELECT 
                 a.id, a.id_pacientes, a.tipo, a.hora, a.estado, a.confirmada_por, a.fecha_confirmacion,
                 a.nueva, a.palabras_clave,
-                p.nombre_completo, p.foto_url, p.habitacion, p.edad
+                p.nombre_completo, p.foto_url, p.habitacion, p.edad, p.diagnostico
             FROM alertas a
             JOIN pacientes p ON a.id_pacientes::int = p.id
             WHERE a.id = %s
@@ -254,6 +255,7 @@ def get_alerta(id: str):
                     "foto_url": row[10],
                     "habitacion": row[11],
                     "edad": row[12],
+                    "diagnostico": row[13],
                 },
             }
         else:

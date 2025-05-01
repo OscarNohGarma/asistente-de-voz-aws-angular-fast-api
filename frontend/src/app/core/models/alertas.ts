@@ -41,4 +41,5 @@ export interface PacienteMini {
   foto_url: string;
   habitacion: string;
   edad: number;
+  diagnostico: string;
 }

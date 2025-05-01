@@ -26,7 +26,7 @@ export class AdminComponent {
     this.router.navigate(['/login']);
   }
   enviar() {
-    const numeroAleatorio = Math.floor(Math.random() * 5) + 1;
+    const numeroAleatorio = Math.floor(Math.random() * 3) + 1;
 
     // Función para generar una hora aleatoria
     function generarHoraAleatoria(): string {

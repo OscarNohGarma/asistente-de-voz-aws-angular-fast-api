@@ -1,4 +1,4 @@
-<div class="alert-card ">
+<div class="alert-card " [ngClass]="{ 'alerta-nueva': nueva }" (click)="handleClick()">
     <div *ngIf="nueva" class="badge-nueva">NUEVA</div>
     <img [src]="foto_url" alt="Foto paciente" class="foto" />
     <div class="info">
