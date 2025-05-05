@@ -1,0 +1,62 @@
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin: 10px 20px;
+  button {
+    padding: 10px 20px;
+    background: #eee;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    &.active {
+      background: #2e2e7f;
+      color: white;
+    }
+  }
+}
+
+.contenido-solicitudes {
+  display: flex;
+  gap: 30px;
+  padding: 20px;
+}
+
+.columna-izquierda, .columna-derecha {
+  width: 50%;
+  background: #f9f9f9;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.lista-alertas li {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.lista-alertas li.seleccionado {
+  background-color: #d1d1ff;
+  font-weight: bold;
+}
+
+.lista-pacientes li {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.encabezado-pacientes {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+
+.encabezado-pacientes button {
+  background-color: #2e2e7f;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}

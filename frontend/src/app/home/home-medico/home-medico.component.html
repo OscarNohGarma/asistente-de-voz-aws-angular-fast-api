@@ -1,0 +1,44 @@
+<!-- Header superior como en enfermería -->
+<app-header></app-header>
+
+<!-- Navegación por pestañas -->
+<div class="tabs">
+  <button [class.active]="tab === 'solicitudes'" (click)="tab = 'solicitudes'">Solicitudes</button>
+  <button [class.active]="tab === 'pacientes'" (click)="tab = 'pacientes'">Pacientes dados de alta</button>
+</div>
+
+<!-- Contenido por pestañas -->
+<div *ngIf="tab === 'solicitudes'" class="contenido-solicitudes">
+  <!-- Columna izquierda: Alertas escaladas -->
+  <div class="columna-izquierda">
+    <h3>Alertas Escaladas</h3>
+    <ul class="lista-alertas">
+      <li *ngFor="let alerta of alertas" (click)="seleccionarAlerta(alerta)" [class.seleccionado]="alerta === alertaSeleccionada">
+        {{ alerta.nombre }} - Habitación {{ alerta.habitacion }} - {{ alerta.hora }} - 🔴 {{ alerta.tipo }}
+      </li>
+    </ul>
+  </div>
+
+  <!-- Columna derecha: Historial de solicitudes del paciente -->
+  <div class="columna-derecha" *ngIf="alertaSeleccionada">
+    <h3>Historial de solicitudes - {{ alertaSeleccionada.nombre }}</h3>
+    <ul>
+      <li *ngFor="let solicitud of alertaSeleccionada.historial">
+        {{ solicitud.fecha }} - {{ solicitud.descripcion }}
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- TAB: Pacientes dados de alta -->
+<div *ngIf="tab === 'pacientes'" class="contenido-pacientes">
+  <div class="encabezado-pacientes">
+    <h3>Pacientes dados de alta</h3>
+    <button (click)="darAltaNuevoPaciente()">+ Nuevo Paciente</button>
+  </div>
+  <ul class="lista-pacientes">
+    <li *ngFor="let paciente of pacientesAlta">
+      {{ paciente.nombre }} - Edad: {{ paciente.edad }} - Alta: {{ paciente.fechaAlta }}
+    </li>
+  </ul>
+</div>
