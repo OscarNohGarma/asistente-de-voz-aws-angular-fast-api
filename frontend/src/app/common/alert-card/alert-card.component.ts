@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../environment/environment';
 
 @Component({
   selector: 'app-alert-card',
@@ -19,6 +20,7 @@ export class AlertCardComponent {
   handleClick(): void {
     this.cardClick.emit();
   }
+
   validarHora(hora: string): string {
     const [horasStr, _] = hora.split(':');
     const horas = parseInt(horasStr, 10);
@@ -28,5 +30,8 @@ export class AlertCardComponent {
     }
 
     return horas < 12 ? 'a.m.' : 'p.m.';
+  }
+  getPacienteFotoUrl(fotoUrl: string): string {
+    return `${environment.apiUrl}${fotoUrl}`;
   }
 }

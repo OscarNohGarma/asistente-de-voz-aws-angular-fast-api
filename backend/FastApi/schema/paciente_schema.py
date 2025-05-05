@@ -6,7 +6,7 @@ from datetime import datetime
 class PacienteSchema(BaseModel):
     id: Optional[int] = None  # Opcional al crear nuevos registros
     nombre_completo: str
-    foto_url: str
+    foto_url: Optional[str] = None  # Campo para la URL de la foto
     edad: int
     habitacion: str
     diagnostico: str
