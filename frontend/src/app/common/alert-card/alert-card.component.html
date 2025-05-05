@@ -1,6 +1,6 @@
 <div class="alert-card " [ngClass]="{ 'alerta-nueva': nueva }" (click)="handleClick()">
     <div *ngIf="nueva" class="badge-nueva">NUEVA</div>
-    <img [src]="foto_url" alt="Foto paciente" class="foto" />
+    <img [src]="getPacienteFotoUrl(foto_url)" alt="Foto paciente" class="foto" />
     <div class="info">
         <p class="nombre">{{ nombre_completo }}</p>
         <p>Edad: {{ edad }}</p>

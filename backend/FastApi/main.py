@@ -1,4 +1,7 @@
-from fastapi import FastAPI
+from datetime import datetime
+import shutil
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from pathlib import Path
 from model.user_connection import UserConnection
 from model.paciente_connection import PacienteConnection
 from model.alerta_connection import AlertaConnection
@@ -107,6 +110,8 @@ def delete_usuario(id: str):
 #      RUTAS PACIENTES
 # ========================
 
+from fastapi.responses import JSONResponse
+
 
 @app.get("/paciente")
 def get_pacientes():
@@ -116,7 +121,7 @@ def get_pacientes():
             {
                 "id": data[0],
                 "nombre_completo": data[1],
-                "foto_url": data[2],
+                "foto_url": f"{data[2]}",  # Asumiendo que 'foto_url' es el nombre del archivo
                 "edad": data[3],
                 "habitacion": data[4],
                 "diagnostico": data[5],
@@ -137,7 +142,7 @@ def get_paciente(id: str):
         return {
             "id": data[0],
             "nombre_completo": data[1],
-            "foto_url": data[2],
+            "foto_url": f"{data[2]}",  # Asumiendo que 'foto_url' es el nombre del archivo
             "edad": data[3],
             "habitacion": data[4],
             "diagnostico": data[5],
@@ -151,11 +156,55 @@ def get_paciente(id: str):
 
 
 @app.post("/paciente")
-def insert_paciente(paciente_data: PacienteSchema):
-    data = paciente_data.dict()
-    data.pop("id", None)
-    paciente_conn.write(data)
-    return {"message": "Paciente insertado correctamente", "paciente": data}
+async def insert_paciente(
+    nombre_completo: str = Form(...),
+    edad: int = Form(...),
+    habitacion: str = Form(...),
+    diagnostico: str = Form(...),
+    fecha_ingreso: datetime = Form(...),
+    activo: bool = Form(...),
+    telefono_familiar: str = Form(...),
+    correo_familiar: str = Form(...),
+    file: UploadFile = File(...),
+):
+    try:
+        # Definir la carpeta donde se guardarán las fotos
+        upload_folder = Path("static/pacientes_fotos")
+        upload_folder.mkdir(parents=True, exist_ok=True)
+
+        # Crear nombre de archivo
+        filename = f"{nombre_completo.replace(' ', '_')}_{edad}.jpg"
+        file_path = upload_folder / filename
+
+        # Guardar foto
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        foto_url = f"/static/pacientes_fotos/{filename}"
+
+        # Armar diccionario de datos
+        data = {
+            "nombre_completo": nombre_completo,
+            "foto_url": foto_url,
+            "edad": edad,
+            "habitacion": habitacion,
+            "diagnostico": diagnostico,
+            "fecha_ingreso": fecha_ingreso,
+            "activo": activo,
+            "telefono_familiar": telefono_familiar,
+            "correo_familiar": correo_familiar,
+        }
+
+        # Guardar en BD
+        paciente_conn.write(data)
+
+        return {"message": "Paciente insertado correctamente", "paciente": data}
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500, detail=f"Error al guardar la foto: {str(e)}"
+        )
 
 
 @app.put("/paciente/{id}")

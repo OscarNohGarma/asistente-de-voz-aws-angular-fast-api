@@ -48,7 +48,7 @@ class PacienteConnection:
                 cur.execute(
                     """ 
                     INSERT INTO pacientes (
-                        nombre_completo, foto_url, edad, habitacion, diagnostico, fecha_ingreso, activo
+                        nombre_completo, foto_url, edad, habitacion, diagnostico, fecha_ingreso, activo, telefono_familiar, correo_familiar
                     ) VALUES (
                         %(nombre_completo)s, %(foto_url)s, %(edad)s, %(habitacion)s,
                         %(diagnostico)s, %(fecha_ingreso)s, %(activo)s,
@@ -94,7 +94,6 @@ class PacienteConnection:
                 cur.execute(
                     """ 
                     DELETE FROM pacientes WHERE id = %s
-                    
                     """,
                     (id,),
                 )

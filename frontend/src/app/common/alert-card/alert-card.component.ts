@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../environment/environment';
 
 @Component({
   selector: 'app-alert-card',
@@ -18,5 +19,8 @@ export class AlertCardComponent {
 
   handleClick(): void {
     this.cardClick.emit();
+  }
+  getPacienteFotoUrl(fotoUrl: string): string {
+    return `${environment.apiUrl}${fotoUrl}`;
   }
 }
