@@ -40,6 +40,9 @@ def convert_webm_to_wav(input_path, output_path):
 
 @router.post("/audio/detectar-palabras")
 async def detectar_palabras(audio_file: UploadFile = File(...)):
+
+    os.makedirs("temp", exist_ok=True)  # Crea la carpeta si no existe
+
     # Guardar archivo webm
     temp_filename_webm = f"temp_audio_{uuid.uuid4().hex}.webm"
     temp_path_webm = os.path.join("temp", temp_filename_webm)
@@ -100,10 +103,6 @@ def process_audio(temp_path_webm, temp_path_wav):
             except Exception as e:
                 print(f"❌ Error al guardar embedding: {e}")
 
-        # Eliminar archivos temporales
-        os.remove(temp_path_webm)
-        os.remove(temp_path_wav)
-
         return {
             "transcripcion": transcript,
             "palabras_clave": keywords_found,
@@ -112,3 +111,12 @@ def process_audio(temp_path_webm, temp_path_wav):
 
     except Exception as e:
         return {"error": f"Ocurrió un error: {str(e)}"}
+
+    finally:
+        try:
+            if os.path.exists(temp_path_webm):
+                os.remove(temp_path_webm)
+            if os.path.exists(temp_path_wav):
+                os.remove(temp_path_wav)
+        except Exception as cleanup_error:
+            print(f"⚠️ Error al eliminar archivos temporales: {cleanup_error}")
