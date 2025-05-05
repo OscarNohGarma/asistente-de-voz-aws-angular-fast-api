@@ -6,6 +6,8 @@ import uuid
 import json
 import psycopg2
 from resemblyzer import VoiceEncoder, preprocess_wav
+import asyncio
+from fastapi import BackgroundTasks
 
 # Agrega el Model_IA al sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
@@ -38,31 +40,36 @@ def convert_webm_to_wav(input_path, output_path):
 
 @router.post("/audio/detectar-palabras")
 async def detectar_palabras(audio_file: UploadFile = File(...)):
+    # Guardar archivo webm
+    temp_filename_webm = f"temp_audio_{uuid.uuid4().hex}.webm"
+    temp_path_webm = os.path.join("temp", temp_filename_webm)
+    with open(temp_path_webm, "wb") as buffer:
+        buffer.write(await audio_file.read())
+
+    # Convertir a WAV
+    temp_filename_wav = temp_filename_webm.replace(".webm", ".wav")
+    temp_path_wav = os.path.join("temp", temp_filename_wav)
+    convert_webm_to_wav(temp_path_webm, temp_path_wav)
+
+    loop = asyncio.get_event_loop()
+
+    # Ejecutar transcripción y demás en segundo plano
+    result = await loop.run_in_executor(
+        None, process_audio, temp_path_webm, temp_path_wav
+    )
+
+    return result
+
+
+def process_audio(temp_path_webm, temp_path_wav):
     try:
-        # Guardar archivo temporal (WebM)
-        temp_filename_webm = f"temp_audio_{uuid.uuid4().hex}.webm"
-        temp_path_webm = os.path.join("temp", temp_filename_webm)
-
-        with open(temp_path_webm, "wb") as buffer:
-            buffer.write(await audio_file.read())
-
-        # Convertir a WAV
-        temp_filename_wav = temp_filename_webm.replace(".webm", ".wav")
-        temp_path_wav = os.path.join("temp", temp_filename_wav)
-        convert_webm_to_wav(temp_path_webm, temp_path_wav)
-
-        # Transcribir audio
         transcript = transcribe_audio(temp_path_wav)
         if not transcript:
             return {"error": "No se pudo transcribir el audio."}
 
-        # Detectar palabras clave
         keywords_found = detect_keywords(transcript, KEYWORDS)
-
-        # Identificar paciente
         patient_info = identify_patient(temp_path_wav, patient_embeddings)
 
-        # Si se identificó un paciente, generar y guardar su nuevo embedding
         if patient_info:
             try:
                 encoder = VoiceEncoder()

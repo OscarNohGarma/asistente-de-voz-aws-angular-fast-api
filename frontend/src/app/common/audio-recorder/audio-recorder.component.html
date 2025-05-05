@@ -1,13 +1,31 @@
-<div class="audio-recorder">
-    <h2>Grabadora de Audio</h2>
+<div class="audio-recorder-div">
+    <div class="audio-recorder-content" [ngClass]="{ 'recording': isRecording }">
+        <h2>Detector de audio</h2>
 
-    <!-- Botón para iniciar la grabación -->
-    <button (click)="startRecording()" [disabled]="isRecording">Iniciar Grabación</button>
 
-    <!-- Botón para detener la grabación -->
-    <button (click)="stopRecording()" [disabled]="!isRecording">Detener Grabación</button>
+        <!-- Onda animada -->
+        <div class="wave-animation" *ngIf="isRecording">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
 
-    <!-- Indicador de grabación -->
-    <p *ngIf="isRecording">🎤 Grabando...</p>
-    <p *ngIf="!isRecording && lastRecording">🎶 Última grabación enviada</p>
+        <div class="recorder-buttons">
+            <button class="btn start-btn" (click)="startRecording()" [disabled]="isRecording">
+                ▶ Iniciar
+            </button>
+
+            <button class="btn stop-btn" (click)="stopRecording()" [disabled]="!isRecording">
+                ⏹ Detener
+            </button>
+        </div>
+
+        <!-- Indicadores -->
+        <div class="status-message">
+            <p *ngIf="isRecording" class="recording-text">Grabando...</p>
+            <p *ngIf="!isRecording && lastRecording" class="sent-text">Última grabación enviada</p>
+        </div>
+    </div>
 </div>
