@@ -9,30 +9,31 @@ import { Observable } from 'rxjs';
 export class AudioRecorderService {
   private mediaRecorder!: MediaRecorder;
   private audioChunks: Blob[] = [];
+  private stream!: MediaStream;
 
   constructor(private http: HttpClient) {}
 
-  // Inicia la grabación de audio
   async startRecording(): Promise<void> {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    this.mediaRecorder = new MediaRecorder(stream);
+    this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    this.mediaRecorder = new MediaRecorder(this.stream);
 
+    this.audioChunks = [];
     this.mediaRecorder.ondataavailable = (event) => {
       if (event.data.size > 0) {
         this.audioChunks.push(event.data);
       }
     };
 
-    this.audioChunks = [];
     this.mediaRecorder.start();
     console.log('🎤 Grabación iniciada...');
   }
 
-  // Detiene la grabación de audio y devuelve un Blob
   async stopRecording(): Promise<Blob> {
     return new Promise((resolve) => {
       this.mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType });
+        const audioBlob = new Blob(this.audioChunks, {
+          type: this.mediaRecorder.mimeType,
+        });
         resolve(audioBlob);
       };
       this.mediaRecorder.stop();
@@ -40,17 +41,50 @@ export class AudioRecorderService {
     });
   }
 
-  // Envía el audio grabado al backend para su procesamiento
   sendAudioToBackend(audioBlob: Blob): Observable<any> {
     const formData = new FormData();
     formData.append('audio_file', audioBlob, 'audio.wav');
-
-    // Imprimir para verificar que los datos se agregan correctamente
-    console.log('Enviando FormData:', formData);
+    console.log('Enviando...', formData);
 
     return this.http.post(
       'http://127.0.0.1:8000/audio/detectar-palabras',
       formData
     );
+  }
+
+  recordInIntervals(intervalMs: number, callback: (blob: Blob) => void): void {
+    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+      const mediaRecorder = new MediaRecorder(stream);
+      let chunks: Blob[] = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(chunks, { type: mediaRecorder.mimeType });
+        callback(audioBlob);
+        chunks = [];
+        mediaRecorder.start(); // reinicia grabación continua
+        setTimeout(() => mediaRecorder.stop(), intervalMs);
+      };
+
+      mediaRecorder.start();
+      setTimeout(() => mediaRecorder.stop(), intervalMs);
+
+      // Guarda referencia para poder detener desde fuera
+      this.mediaRecorder = mediaRecorder;
+      this.stream = stream;
+    });
+  }
+
+  stopStream(): void {
+    if (this.mediaRecorder?.state !== 'inactive') {
+      this.mediaRecorder.stop();
+    }
+
+    this.stream?.getTracks().forEach((track) => track.stop());
   }
 }

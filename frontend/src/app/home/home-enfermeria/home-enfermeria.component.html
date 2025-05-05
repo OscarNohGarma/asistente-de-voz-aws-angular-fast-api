@@ -47,8 +47,9 @@
             </div>
 
             <div class="botones-modal">
-                <button class="btn-confirmar" (click)="onSubmit()">Confirmar</button>
-                <button class="btn-escalar" (click)="escalarAlerta()">Escalar</button>
+                <button *ngIf="!requiereEscalamiento()" class="btn-confirmar" (click)="onSubmit()">Confirmar</button>
+                <button *ngIf="requiereEscalamiento()" class="btn-escalar" (click)="onSubmit()">Escalar al
+                    médico</button>
             </div>
         </form>
     </div>

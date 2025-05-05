@@ -20,6 +20,17 @@ export class AlertCardComponent {
   handleClick(): void {
     this.cardClick.emit();
   }
+
+  validarHora(hora: string): string {
+    const [horasStr, _] = hora.split(':');
+    const horas = parseInt(horasStr, 10);
+
+    if (isNaN(horas) || horas < 0 || horas > 23) {
+      return 'Hora inválida';
+    }
+
+    return horas < 12 ? 'a.m.' : 'p.m.';
+  }
   getPacienteFotoUrl(fotoUrl: string): string {
     return `${environment.apiUrl}${fotoUrl}`;
   }

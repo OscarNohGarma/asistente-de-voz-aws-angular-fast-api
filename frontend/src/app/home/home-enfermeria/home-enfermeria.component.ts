@@ -148,10 +148,10 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
 
   escalarAlerta(): void {
     if (!this.alertaSeleccionada) return;
-    // this.alertaService.escalar(this.alertaSeleccionada.id).subscribe(() => {
-    //   this.cargarAlertas();
-    //   this.cerrarOverlay();
-    // });
+    if (this.sendForm.invalid) {
+      this.sendForm.markAllAsTouched();
+      return;
+    }
   }
 
   onSubmit() {
@@ -172,7 +172,7 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
     const alertaActualizada = {
       ...this.alertaSeleccionada,
       tipo,
-      estado: 'confirmada',
+      estado: this.requiereEscalamiento() ? 'escalada' : 'confirmada',
       confirmada_por: this.authService.getNombre()?.toString(),
       fecha_confirmacion: getLocalISOStringWithMicroseconds(),
     };
@@ -191,6 +191,11 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
   }
   get f() {
     return this.sendForm.controls;
+  }
+
+  requiereEscalamiento(): boolean {
+    const tipo = this.sendForm.value.tipo;
+    return tipo === 'naranja' || tipo === 'rojo';
   }
 }
 function getLocalISOStringWithMicroseconds(): string {
