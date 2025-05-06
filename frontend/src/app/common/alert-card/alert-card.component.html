@@ -1,12 +1,13 @@
-<div class="alert-card ">
-    <img [src]="fotoUrl" alt="Foto paciente" class="foto" />
+<div class="alert-card " [ngClass]="{ 'alerta-nueva': nueva }" (click)="handleClick()">
+    <div *ngIf="nueva" class="badge-nueva">NUEVA</div>
+    <img [src]="getPacienteFotoUrl(foto_url)" alt="Foto paciente" class="foto" />
     <div class="info">
-        <p class="nombre">{{ paciente }}</p>
-        <p>Alerta: {{ alerta }}</p>
-        <p>Hora: {{ hora }}</p>
+        <p class="nombre">{{ nombre_completo }}</p>
+        <p>Edad: {{ edad }}</p>
+        <p>Hora: {{ hora }} {{validarHora(hora)}}</p>
     </div>
-    <div class="acciones">
+    <!-- <div class="acciones">
         <button class="btn-confirmar">Confirmar</button>
         <button class="btn-escalar">Escalar</button>
-    </div>
+    </div> -->
 </div>

@@ -1,6 +1,6 @@
 # Entornos virtuales
 env/
-.venv/
+venv/
 
 # Archivos compilados de Python
 __pycache__/
@@ -27,3 +27,5 @@ schema/__pycache__/
 # Archivos del sistema
 .DS_Store
 Thumbs.db
+
+temp/

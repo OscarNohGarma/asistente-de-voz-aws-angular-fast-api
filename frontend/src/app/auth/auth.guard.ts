@@ -21,6 +21,12 @@ export class AuthGuard implements CanActivate {
     const token = this.authService.getToken();
     const rol = this.authService.getRol();
 
+    console.log(this.router.url);
+
+    if (this.router.url == '/audio-recorder') {
+      return false;
+    }
+
     if (!token || !rol) {
       this.router.navigate(['/login']);
       return false;

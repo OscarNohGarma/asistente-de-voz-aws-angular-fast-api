@@ -6,7 +6,7 @@ dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
 load_dotenv(dotenv_path)
 
 
-class UserConnection:
+class AlertaConnection:
     def __init__(self):
         self.conn = None
         try:
@@ -25,34 +25,28 @@ class UserConnection:
 
     def read_all(self):
         with self.conn.cursor() as cur:
-            cur.execute(
-                """ 
-                SELECT * FROM "usuarios"
-            """
-            )
+            cur.execute("SELECT * FROM alertas")
             return cur.fetchall()
 
     def read_one(self, id):
         with self.conn.cursor() as cur:
-            cur.execute(
-                """ 
-                SELECT * FROM "usuarios" WHERE id = %s
-            """,
-                (id,),
-            )
+            cur.execute("SELECT * FROM alertas WHERE id = %s", (id,))
             return cur.fetchone()
 
     def write(self, data):
         try:
             with self.conn.cursor() as cur:
                 cur.execute(
-                    """ 
-                    INSERT INTO "usuarios" (
-                        nombre_completo, correo, contrasena, rol, fecha_creacion, activo
+                    """
+                    INSERT INTO alertas (
+                        id_pacientes, tipo, hora, estado, confirmada_por,
+                        fecha_confirmacion, nueva, palabras_clave
                     ) VALUES (
-                        %(nombre_completo)s, %(correo)s, %(contrasena)s, %(rol)s, %(fecha_creacion)s, %(activo)s
+                        %(id_pacientes)s, %(tipo)s, %(hora)s, %(estado)s,
+                        %(confirmada_por)s, %(fecha_confirmacion)s,
+                        %(nueva)s, %(palabras_clave)s
                     )
-                """,
+                    """,
                     data,
                 )
             self.conn.commit()
@@ -65,16 +59,18 @@ class UserConnection:
         try:
             with self.conn.cursor() as cur:
                 cur.execute(
-                    """ 
-                    UPDATE "usuarios"
-                    SET nombre_completo = %(nombre_completo)s,
-                        correo = %(correo)s,
-                        contrasena = %(contrasena)s,
-                        rol = %(rol)s,
-                        fecha_creacion = %(fecha_creacion)s,
-                        activo = %(activo)s
+                    """
+                    UPDATE alertas
+                    SET id_pacientes = %(id_pacientes)s,
+                        tipo = %(tipo)s,
+                        hora = %(hora)s,
+                        estado = %(estado)s,
+                        confirmada_por = %(confirmada_por)s,
+                        fecha_confirmacion = %(fecha_confirmacion)s,
+                        nueva = %(nueva)s,
+                        palabras_clave = %(palabras_clave)s
                     WHERE id = %(id)s
-                """,
+                    """,
                     data,
                 )
             self.conn.commit()
@@ -83,19 +79,19 @@ class UserConnection:
             print("Error al actualizar en la base de datos:", e)
             raise e
 
-    def delete(self, id):
+    def delete_all(self):
         try:
             with self.conn.cursor() as cur:
                 cur.execute(
                     """ 
-                    DELETE FROM "usuarios" WHERE id = %s
-                """,
-                    (id,),
+                    DELETE FROM alertas;
+                    ALTER SEQUENCE alertas_id_seq RESTART WITH 1;
+                    """
                 )
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()
-            print("Error al eliminar en la base de datos:", e)
+            print("Error al eliminar todas las alertas en la base de datos:", e)
             raise e
 
     def __del__(self):

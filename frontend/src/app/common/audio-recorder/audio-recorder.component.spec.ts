@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EnfermeroComponent } from './enfermero.component';
+import { AudioRecorderComponent } from './audio-recorder.component';
 
-describe('EnfermeroComponent', () => {
-  let component: EnfermeroComponent;
-  let fixture: ComponentFixture<EnfermeroComponent>;
+describe('AudioRecorderComponent', () => {
+  let component: AudioRecorderComponent;
+  let fixture: ComponentFixture<AudioRecorderComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EnfermeroComponent]
+      imports: [AudioRecorderComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(EnfermeroComponent);
+    fixture = TestBed.createComponent(AudioRecorderComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

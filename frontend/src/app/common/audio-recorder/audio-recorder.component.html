@@ -1,0 +1,31 @@
+<div class="audio-recorder-div">
+    <div class="audio-recorder-content" [ngClass]="{ 'recording': isRecording }">
+        <h2>Detector de audio</h2>
+
+
+        <!-- Onda animada -->
+        <div class="wave-animation" *ngIf="isRecording">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+
+        <div class="recorder-buttons">
+            <button class="btn start-btn" (click)="startRecording()" [disabled]="isRecording">
+                ▶ Iniciar
+            </button>
+
+            <button class="btn stop-btn" (click)="stopRecording()" [disabled]="!isRecording">
+                ⏹ Detener
+            </button>
+        </div>
+
+        <!-- Indicadores -->
+        <div class="status-message">
+            <p *ngIf="isRecording" class="recording-text">Grabando...</p>
+            <p *ngIf="!isRecording && lastRecording" class="sent-text">Última grabación enviada</p>
+        </div>
+    </div>
+</div>

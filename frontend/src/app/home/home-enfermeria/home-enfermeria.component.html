@@ -3,8 +3,54 @@
 <div class="enfermeria-wrapper">
     <h2 class="titulo">Alertas de pacientes</h2>
     <div class="alertas-lista">
-        <app-alert-card *ngFor="let alerta of alertas" [paciente]="alerta.paciente" [fotoUrl]="alerta.fotoUrl"
-            [alerta]="alerta.alerta" [hora]="alerta.hora"></app-alert-card>
+        <app-alert-card (cardClick)="handleOpenOverlay(alerta)" *ngFor="let alerta of alertaItems"
+            [nombre_completo]="alerta.paciente?.nombre_completo || ''" [foto_url]="alerta.paciente?.foto_url || ''"
+            [edad]="alerta.paciente?.edad || 0" [hora]="alerta.hora || ''" [nueva]="alerta.nueva || false">
+        </app-alert-card>
     </div>
-    <app-alert-list />
+</div>
+<!-- Mensajes emergentes -->
+<div *ngFor="let m of mensajes" class="alerta">
+    🩺 {{ m }}
+    <div class="alerta-timer">
+    </div>
+</div> <!-- Nueva barra de tiempo -->
+<div class="overlay" [ngClass]="{ 'open': alertaSeleccionada }">
+    <div class="modal" *ngIf="overlayOpen && alertaSeleccionada">
+
+        <div class="close-modal" (click)="cerrarOverlay()">x</div>
+
+
+
+        <form [formGroup]="sendForm">
+            <h3 class="title-alerta">Alerta de paciente</h3>
+            <p><strong>Paciente:</strong> {{ alertaSeleccionada.paciente?.nombre_completo }}</p>
+            <p><strong>Hora:</strong> {{ alertaSeleccionada.hora }}</p>
+            <p><strong>Edad:</strong> {{ alertaSeleccionada.paciente?.edad }} años</p>
+            <p><strong>Diagnostico:</strong> {{ alertaSeleccionada.paciente?.diagnostico }}</p>
+            <p><strong>Palabras:</strong> {{ alertaSeleccionada.palabras_clave }}</p>
+
+            <div class="tipo-urgencia">
+                <label for="tipo" class="urgencia-label">Selecciona el tipo de urgencia: </label>
+                <select id="tipo" name="tipo" class="select-urgencia" formControlName="tipo"
+                    [ngClass]="{ 'err': submitted && f['tipo'].errors }">
+                    <option value="">--Seleccione--</option>
+                    <option value="azul">🔵 Azul</option>
+                    <option value="verde">🟢 Verde</option>
+                    <option value="amarillo">🟡 Amarillo</option>
+                    <option value="naranja">🟠 Naranja</option>
+                    <option value="rojo">🔴 Rojo</option>
+                </select>
+            </div>
+            <div *ngIf="submitted && f['tipo'].errors" class="error">
+                <small *ngIf="f['tipo'].errors?.['required']">El correo es obligatorio.</small>
+            </div>
+
+            <div class="botones-modal">
+                <button *ngIf="!requiereEscalamiento()" class="btn-confirmar" (click)="onSubmit()">Confirmar</button>
+                <button *ngIf="requiereEscalamiento()" class="btn-escalar" (click)="onSubmit()">Escalar al
+                    médico</button>
+            </div>
+        </form>
+    </div>
 </div>

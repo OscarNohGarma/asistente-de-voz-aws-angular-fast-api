@@ -6,7 +6,7 @@ dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
 load_dotenv(dotenv_path)
 
 
-class UserConnection:
+class PacienteConnection:
     def __init__(self):
         self.conn = None
         try:
@@ -27,8 +27,8 @@ class UserConnection:
         with self.conn.cursor() as cur:
             cur.execute(
                 """ 
-                SELECT * FROM "usuarios"
-            """
+                SELECT * FROM pacientes
+                """
             )
             return cur.fetchall()
 
@@ -36,8 +36,8 @@ class UserConnection:
         with self.conn.cursor() as cur:
             cur.execute(
                 """ 
-                SELECT * FROM "usuarios" WHERE id = %s
-            """,
+                SELECT * FROM pacientes WHERE id = %s
+                """,
                 (id,),
             )
             return cur.fetchone()
@@ -47,12 +47,14 @@ class UserConnection:
             with self.conn.cursor() as cur:
                 cur.execute(
                     """ 
-                    INSERT INTO "usuarios" (
-                        nombre_completo, correo, contrasena, rol, fecha_creacion, activo
+                    INSERT INTO pacientes (
+                        nombre_completo, foto_url, edad, habitacion, diagnostico, fecha_ingreso, activo, telefono_familiar, correo_familiar
                     ) VALUES (
-                        %(nombre_completo)s, %(correo)s, %(contrasena)s, %(rol)s, %(fecha_creacion)s, %(activo)s
+                        %(nombre_completo)s, %(foto_url)s, %(edad)s, %(habitacion)s,
+                        %(diagnostico)s, %(fecha_ingreso)s, %(activo)s,
+                        %(telefono_familiar)s, %(correo_familiar)s
                     )
-                """,
+                    """,
                     data,
                 )
             self.conn.commit()
@@ -66,15 +68,18 @@ class UserConnection:
             with self.conn.cursor() as cur:
                 cur.execute(
                     """ 
-                    UPDATE "usuarios"
+                    UPDATE pacientes
                     SET nombre_completo = %(nombre_completo)s,
-                        correo = %(correo)s,
-                        contrasena = %(contrasena)s,
-                        rol = %(rol)s,
-                        fecha_creacion = %(fecha_creacion)s,
-                        activo = %(activo)s
+                        foto_url = %(foto_url)s,
+                        edad = %(edad)s,
+                        habitacion = %(habitacion)s,
+                        diagnostico = %(diagnostico)s,
+                        fecha_ingreso = %(fecha_ingreso)s,
+                        activo = %(activo)s,
+                        telefono_familiar = %(telefono_familiar)s,
+                        correo_familiar = %(correo_familiar)s
                     WHERE id = %(id)s
-                """,
+                    """,
                     data,
                 )
             self.conn.commit()
@@ -88,14 +93,29 @@ class UserConnection:
             with self.conn.cursor() as cur:
                 cur.execute(
                     """ 
-                    DELETE FROM "usuarios" WHERE id = %s
-                """,
+                    DELETE FROM pacientes WHERE id = %s
+                    """,
                     (id,),
                 )
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()
             print("Error al eliminar en la base de datos:", e)
+            raise e
+
+    def delete_all(self):
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(
+                    """ 
+                    DELETE FROM pacientes;
+                    ALTER SEQUENCE pacientes_id_seq RESTART WITH 1;
+                    """
+                )
+            self.conn.commit()
+        except Exception as e:
+            self.conn.rollback()
+            print("Error al eliminar todos los pacientes en la base de datos:", e)
             raise e
 
     def __del__(self):
