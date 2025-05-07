@@ -17,16 +17,29 @@
 }
 
 .contenido-solicitudes {
-  display: flex;
   gap: 30px;
   padding: 20px;
 }
-
-.columna-izquierda, .columna-derecha {
-  width: 50%;
+.columnas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+.columna-izquierda,
+.columna-derecha {
   background: #f9f9f9;
   border-radius: 10px;
-  padding: 20px;
+  padding: 30px;
+
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  gap: 1rem;
+  position: relative;
+  transition: all 0.2s ease;
+}
+.columna-derecha h3 {
+  margin-bottom: 1.5rem;
 }
 
 .lista-alertas li {
@@ -45,18 +58,37 @@
   border-bottom: 1px solid #ccc;
 }
 
-.encabezado-pacientes {
+.encabezado {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 20px;
+  color: var(--title-purple);
+}
+.encabezado button {
+  background-color: var(--primary-purple);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+.encabezado button:hover {
+  background-color: var(--primary-purple-hover);
 }
 
-.encabezado-pacientes button {
-  background-color: #2e2e7f;
-  color: white;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
+//pacientes
+.contenido-pacientes {
+  padding: 20px;
+}
+.paciente {
+}
+.paciente:hover {
+  background-color: var(--primary-purple-transparent);
   cursor: pointer;
+}
+span {
+  font-weight: 700;
 }

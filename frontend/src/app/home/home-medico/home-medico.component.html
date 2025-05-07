@@ -1,44 +1,68 @@
 <!-- Header superior como en enfermería -->
-<app-header></app-header>
+<app-header [nombreUsuario]="nombreUsuario" (cerrarSesion)="handleLogout()"></app-header>
 
 <!-- Navegación por pestañas -->
-<div class="tabs">
-  <button [class.active]="tab === 'solicitudes'" (click)="tab = 'solicitudes'">Solicitudes</button>
-  <button [class.active]="tab === 'pacientes'" (click)="tab = 'pacientes'">Pacientes dados de alta</button>
-</div>
+<div class="container">
 
-<!-- Contenido por pestañas -->
-<div *ngIf="tab === 'solicitudes'" class="contenido-solicitudes">
-  <!-- Columna izquierda: Alertas escaladas -->
-  <div class="columna-izquierda">
-    <h3>Alertas Escaladas</h3>
-    <ul class="lista-alertas">
-      <li *ngFor="let alerta of alertas" (click)="seleccionarAlerta(alerta)" [class.seleccionado]="alerta === alertaSeleccionada">
-        {{ alerta.nombre }} - Habitación {{ alerta.habitacion }} - {{ alerta.hora }} - 🔴 {{ alerta.tipo }}
-      </li>
-    </ul>
+  <div class="tabs">
+    <button [class.active]="tab === 'solicitudes'" (click)="tab = 'solicitudes'">Solicitudes</button>
+    <button [class.active]="tab === 'pacientes'" (click)="tab = 'pacientes'">Pacientes dados de alta</button>
   </div>
 
-  <!-- Columna derecha: Historial de solicitudes del paciente -->
-  <div class="columna-derecha" *ngIf="alertaSeleccionada">
-    <h3>Historial de solicitudes - {{ alertaSeleccionada.nombre }}</h3>
-    <ul>
-      <li *ngFor="let solicitud of alertaSeleccionada.historial">
-        {{ solicitud.fecha }} - {{ solicitud.descripcion }}
-      </li>
-    </ul>
-  </div>
-</div>
+  <!-- Contenido por pestañas -->
+  <div *ngIf="tab === 'solicitudes'" class="contenido-solicitudes">
+    <!-- Columna izquierda: Alertas escaladas -->
+    <h3 class="encabezado">Alertas Escaladas</h3>
+    <div class="columnas">
+      <div class="columna-izquierda">
+        <ul class="lista-alertas">
+          <li *ngFor="let alerta of alertas" (click)="seleccionarAlerta(alerta)"
+            [class.seleccionado]="alerta === alertaSeleccionada">
+            {{ alerta.nombre }} - Habitación {{ alerta.habitacion }} - {{ alerta.hora }} - 🔴 {{ alerta.tipo }}
+          </li>
+        </ul>
+      </div>
+      <!-- Columna derecha: Historial de solicitudes del paciente -->
+      <div class="columna-derecha" *ngIf="alertaSeleccionada">
+        <h3>Historial de solicitudes - {{ alertaSeleccionada.nombre }}</h3>
+        <ul>
+          <li *ngFor="let solicitud of alertaSeleccionada.historial">
+            {{ solicitud.fecha }} - {{ solicitud.descripcion }}
+          </li>
+        </ul>
+      </div>
+    </div>
 
-<!-- TAB: Pacientes dados de alta -->
-<div *ngIf="tab === 'pacientes'" class="contenido-pacientes">
-  <div class="encabezado-pacientes">
-    <h3>Pacientes dados de alta</h3>
-    <button (click)="darAltaNuevoPaciente()">+ Nuevo Paciente</button>
   </div>
-  <ul class="lista-pacientes">
-    <li *ngFor="let paciente of pacientesAlta">
-      {{ paciente.nombre }} - Edad: {{ paciente.edad }} - Alta: {{ paciente.fechaAlta }}
-    </li>
-  </ul>
+
+  <!-- TAB: Pacientes dados de alta -->
+  <div *ngIf="tab === 'pacientes'" class="contenido-pacientes">
+    <div class="encabezado">
+      <h3>Pacientes dados de alta</h3>
+      <button (click)="darAltaNuevoPaciente()">+ Nuevo paciente</button>
+    </div>
+    <div class="columnas">
+
+      <div class="columna-izquierda">
+        <ul class=" lista-pacientes">
+          <li *ngFor="let paciente of listaPacientes" class="paciente" (click)="seleccionarPaciente(paciente)">
+            <span> {{ paciente.nombre_completo }} </span>- Edad: <span> {{ paciente.edad }} </span>- Habitación: <span>
+              {{
+              paciente.habitacion }}</span>
+          </li>
+        </ul>
+      </div>
+      <div class="columna-derecha" *ngIf="pacienteSeleccionado">
+        <h3>Información del paciente </h3>
+        <p>Nombre: {{ pacienteSeleccionado.nombre_completo }}</p>
+        <p>Edad: {{ pacienteSeleccionado.edad }}</p>
+        <p>Habitación: {{ pacienteSeleccionado.habitacion }}</p>
+        <p>Diagnóstico: {{ pacienteSeleccionado.diagnostico }}</p>
+        <p>Fecha de ingreso: {{ formatearFecha(pacienteSeleccionado.fecha_ingreso ) }}</p>
+        <p>Correo de familiar: {{ pacienteSeleccionado.correo_familiar }}</p>
+        <p>Número de familiar: {{ pacienteSeleccionado.telefono_familiar }}</p>
+
+      </div>
+    </div>
+  </div>
 </div>

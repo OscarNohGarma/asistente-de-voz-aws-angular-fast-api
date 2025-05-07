@@ -1,8 +1,8 @@
 // home.routes.ts
 import { Routes } from '@angular/router';
-import { MedicoComponent } from './medico/medico.component';
 import { AuthGuard } from '../auth/auth.guard';
 import { HomeEnfermeriaComponent } from './home-enfermeria/home-enfermeria.component';
+import { HomeMedicoComponent } from './home-medico/home-medico.component';
 
 export const homeRoutes: Routes = [
   {
@@ -13,7 +13,7 @@ export const homeRoutes: Routes = [
   },
   {
     path: 'medico',
-    component: MedicoComponent,
+    component: HomeMedicoComponent,
     canActivate: [AuthGuard],
     data: { roles: ['medico'] },
   },
