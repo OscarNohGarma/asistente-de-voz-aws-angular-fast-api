@@ -2,12 +2,15 @@ from datetime import datetime
 import shutil
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from pathlib import Path
+from model.bitacora_connection import BitacoraConnection
+from schema.bitacora import BitacoraSchema
 from model.user_connection import UserConnection
 from model.paciente_connection import PacienteConnection
 from model.alerta_connection import AlertaConnection
 from schema.user_schema import UserSchema
 from schema.paciente_schema import PacienteSchema
 from schema.alerta_schema import AlertaSchema
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.responses import JSONResponse
@@ -18,9 +21,10 @@ import os
 from routers import alert_websocket
 
 app = FastAPI()
-conn = UserConnection()
+usuario_conn = UserConnection()
 paciente_conn = PacienteConnection()  # conexión para pacientes
 alerta_conn = AlertaConnection()  # conexión para alertas
+bitacora_conn = BitacoraConnection()
 
 app.include_router(alert_websocket.router)
 
@@ -52,7 +56,7 @@ def favicon():
 @app.get("/usuario")
 def get_usuarios():
     items = []
-    for data in conn.read_all():
+    for data in usuario_conn.read_all():
         items.append(
             {
                 "id": data[0],
@@ -69,7 +73,7 @@ def get_usuarios():
 
 @app.get("/usuario/{id}")
 def get_usuario(id: str):
-    data = conn.read_one(id)
+    data = usuario_conn.read_one(id)
     if data:
         return {
             "id": data[0],
@@ -88,7 +92,7 @@ def get_usuario(id: str):
 def insert_usuario(user_data: UserSchema):
     data = user_data.dict()
     data.pop("id", None)
-    conn.write(data)
+    usuario_conn.write(data)
     return {"message": "Usuario insertado correctamente", "usuario": data}
 
 
@@ -96,13 +100,13 @@ def insert_usuario(user_data: UserSchema):
 def update_usuario(id: str, user_data: UserSchema):
     data = user_data.dict()
     data["id"] = id
-    conn.update(id, data)
+    usuario_conn.update(id, data)
     return {"message": "Usuario actualizado correctamente", "usuario_actualizado": data}
 
 
 @app.delete("/usuario/{id}")
 def delete_usuario(id: str):
-    conn.delete(id)
+    usuario_conn.delete(id)
     return {"message": f"Usuario con id {id} eliminado correctamente"}
 
 
@@ -237,35 +241,33 @@ def delete_all_pacientes():
 
 @app.get("/alerta")
 def get_alertas():
-    with conn.conn.cursor() as cur:
+    with usuario_conn.conn.cursor() as cur:
         cur.execute(
             """
             SELECT 
-                a.id, a.id_pacientes, a.tipo, a.hora, a.estado, a.confirmada_por, a.fecha_confirmacion,
+                a.id, a.id_paciente, a.tipo, a.estado, a.fecha,
                 a.nueva, a.palabras_clave,
                 p.nombre_completo, p.foto_url, p.habitacion, p.edad, p.diagnostico
             FROM alertas a
-            JOIN pacientes p ON a.id_pacientes::int = p.id
+            JOIN pacientes p ON a.id_paciente::int = p.id
         """
         )
         alertas = []
         for row in cur.fetchall():
             alerta = {
                 "id": row[0],
-                "id_pacientes": row[1],
+                "id_paciente": row[1],
                 "tipo": row[2],
-                "hora": row[3],
-                "estado": row[4],
-                "confirmada_por": row[5],
-                "fecha_confirmacion": row[6],
-                "nueva": row[7],
-                "palabras_clave": row[8],
+                "estado": row[3],
+                "fecha": row[4],
+                "nueva": row[5],
+                "palabras_clave": row[6],
                 "paciente": {
-                    "nombre_completo": row[9],
-                    "foto_url": row[10],
-                    "habitacion": row[11],
-                    "edad": row[12],
-                    "diagnostico": row[13],
+                    "nombre_completo": row[7],
+                    "foto_url": row[8],
+                    "habitacion": row[9],
+                    "edad": row[10],
+                    "diagnostico": row[11],
                 },
             }
             alertas.append(alerta)
@@ -274,15 +276,15 @@ def get_alertas():
 
 @app.get("/alerta/{id}")
 def get_alerta(id: str):
-    with conn.conn.cursor() as cur:
+    with usuario_conn.conn.cursor() as cur:
         cur.execute(
             """
             SELECT 
-                a.id, a.id_pacientes, a.tipo, a.hora, a.estado, a.confirmada_por, a.fecha_confirmacion,
+                a.id, a.id_paciente, a.tipo, a.estado, a.fecha,
                 a.nueva, a.palabras_clave,
                 p.nombre_completo, p.foto_url, p.habitacion, p.edad, p.diagnostico
             FROM alertas a
-            JOIN pacientes p ON a.id_pacientes::int = p.id
+            JOIN pacientes p ON a.id_paciente::int = p.id
             WHERE a.id = %s
             """,
             (id,),
@@ -291,20 +293,18 @@ def get_alerta(id: str):
         if row:
             return {
                 "id": row[0],
-                "id_pacientes": row[1],
+                "id_paciente": row[1],
                 "tipo": row[2],
-                "hora": row[3],
-                "estado": row[4],
-                "confirmada_por": row[5],
-                "fecha_confirmacion": str(row[6]) if row[6] else None,
-                "nueva": row[7],
-                "palabras_clave": row[8],
+                "estado": row[3],
+                "fecha": str(row[4]) if row[4] else None,
+                "nueva": row[5],
+                "palabras_clave": row[6],
                 "paciente": {
-                    "nombre_completo": row[9],
-                    "foto_url": row[10],
-                    "habitacion": row[11],
-                    "edad": row[12],
-                    "diagnostico": row[13],
+                    "nombre_completo": row[7],
+                    "foto_url": row[8],
+                    "habitacion": row[9],
+                    "edad": row[10],
+                    "diagnostico": row[11],
                 },
             }
         else:
@@ -315,7 +315,8 @@ def get_alerta(id: str):
 def insert_alerta(alerta_data: AlertaSchema):
     data = alerta_data.dict()
     data.pop("id", None)
-    alerta_conn.write(data)
+    new_id = alerta_conn.write(data)
+    data["id"] = new_id  # Añade el id a los datos de respuesta
     return {"message": "Alerta insertada correctamente", "alerta": data}
 
 
@@ -337,3 +338,108 @@ def delete_alerta(id: str):
 def delete_all_alertas():
     alerta_conn.delete_all()
     return {"message": "Todas las alertas han sido eliminados correctamente"}
+
+
+# ========================
+#      RUTAS BITÁCORA
+# ========================
+
+
+@app.get("/bitacora")
+def get_bitacora():
+    with usuario_conn.conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT
+                b.id, b.id_alerta, b.accion, b.usuario, b.descripcion, b.fecha_accion,
+                a.id_paciente, a.tipo, a.estado, a.fecha, a.nueva, a.palabras_clave,
+                p.nombre_completo, p.foto_url, p.habitacion, p.edad, p.diagnostico
+            FROM bitacora b
+            JOIN alertas a ON b.id_alerta = a.id
+            JOIN pacientes p ON a.id_paciente::int = p.id
+            ORDER BY b.fecha_accion DESC;
+            """
+        )
+        registros = []
+        for row in cur.fetchall():
+            registros.append(
+                {
+                    "id": row[0],
+                    "id_alerta": row[1],
+                    "accion": row[2],
+                    "usuario": row[3],
+                    "descripcion": row[4],
+                    "fecha_accion": str(row[5]),
+                    "alerta": {
+                        "id_paciente": row[6],
+                        "tipo": row[7],
+                        "estado": row[8],
+                        "fecha": str(row[9]),
+                        "nueva": row[10],
+                        "palabras_clave": row[11],
+                        "paciente": {
+                            "nombre_completo": row[12],
+                            "foto_url": row[13],
+                            "habitacion": row[14],
+                            "edad": row[15],
+                            "diagnostico": row[16],
+                        },
+                    },
+                }
+            )
+        return registros
+
+
+@app.get("/bitacora/{id}")
+def get_bitacora_por_id(id: int):
+    r = bitacora_conn.read_one(id)
+    if r:
+        return {
+            "id": r[0],
+            "id_alerta": r[1],
+            "accion": r[2],
+            "usuario": r[3],
+            "descripcion": r[4],
+            "fecha_accion": str(r[5]) if r[5] else None,
+        }
+    else:
+        return {"message": "Registro de bitácora no encontrado"}
+
+
+@app.get("/bitacora/alerta/{id_alerta}")
+def get_bitacora_por_alerta(id_alerta: int):
+    registros = bitacora_conn.read_by_alerta(id_alerta)
+    resultado = [
+        {
+            "id": r[0],
+            "id_alerta": r[1],
+            "accion": r[2],
+            "usuario": r[3],
+            "descripcion": r[4],
+            "fecha_accion": str(r[5]) if r[5] else None,
+        }
+        for r in registros
+    ]
+    return resultado
+
+
+@app.post("/bitacora")
+def insertar_bitacora(registro: BitacoraSchema):
+    data = registro.dict()
+    data.pop("id", None)
+    bitacora_conn.write(data)
+    return {"message": "Registro de bitácora insertado correctamente", "bitacora": data}
+
+
+@app.delete("/bitacora/{id}")
+def delete_paciente(id: str):
+    paciente_conn.delete(id)
+    return {"message": f"Bitacora con id {id} eliminado correctamente"}
+
+
+@app.delete("/bitacora")
+def eliminar_toda_bitacora():
+    bitacora_conn.delete_all()
+    return {
+        "message": "Todos los registros de bitácora fueron eliminados correctamente"
+    }

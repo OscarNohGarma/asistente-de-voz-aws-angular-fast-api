@@ -5,7 +5,7 @@
     <div class="alertas-lista">
         <app-alert-card (cardClick)="handleOpenOverlay(alerta)" *ngFor="let alerta of alertaItems"
             [nombre_completo]="alerta.paciente?.nombre_completo || ''" [foto_url]="alerta.paciente?.foto_url || ''"
-            [edad]="alerta.paciente?.edad || 0" [hora]="alerta.hora || ''" [nueva]="alerta.nueva || false">
+            [edad]="alerta.paciente?.edad || 0" [hora]="alerta.fecha || ''" [nueva]="alerta.nueva || false">
         </app-alert-card>
     </div>
 </div>
@@ -25,7 +25,7 @@
         <form [formGroup]="sendForm">
             <h3 class="title-alerta">Alerta de paciente</h3>
             <p><strong>Paciente:</strong> {{ alertaSeleccionada.paciente?.nombre_completo }}</p>
-            <p><strong>Hora:</strong> {{ alertaSeleccionada.hora }}</p>
+            <p><strong>Fecha:</strong> {{ validarHora( alertaSeleccionada.fecha!) }}</p>
             <p><strong>Edad:</strong> {{ alertaSeleccionada.paciente?.edad }} años</p>
             <p><strong>Diagnostico:</strong> {{ alertaSeleccionada.paciente?.diagnostico }}</p>
             <p><strong>Palabras:</strong> {{ alertaSeleccionada.palabras_clave }}</p>
@@ -41,10 +41,19 @@
                     <option value="naranja">🟠 Naranja</option>
                     <option value="rojo">🔴 Rojo</option>
                 </select>
+                <div *ngIf="submitted && f['tipo'].errors" class="error">
+                    <small *ngIf="f['tipo'].errors?.['required']">El tipo es obligatorio.</small>
+                </div>
             </div>
-            <div *ngIf="submitted && f['tipo'].errors" class="error">
-                <small *ngIf="f['tipo'].errors?.['required']">El correo es obligatorio.</small>
+            <div class="descripcion">
+                <label for="descripcion" class="descripcion-label">Describe la urgencia:</label>
+                <input id="descripcion" name="descripcion" type="text" formControlName="descripcion"
+                    class="input-descripcion" [ngClass]="{ 'err': submitted && f['descripcion'].errors}">
+                <div *ngIf="submitted && f['descripcion'].errors" class="error">
+                    <small *ngIf="f['descripcion'].errors?.['required']">La descripción es obligatoria.</small>
+                </div>
             </div>
+
 
             <div class="botones-modal">
                 <button *ngIf="!requiereEscalamiento()" class="btn-confirmar" (click)="onSubmit()">Confirmar</button>

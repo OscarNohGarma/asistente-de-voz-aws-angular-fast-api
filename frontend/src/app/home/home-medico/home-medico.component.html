@@ -15,12 +15,16 @@
     <h3 class="encabezado">Alertas Escaladas</h3>
     <div class="columnas">
       <div class="columna-izquierda">
-        <ul class="lista-alertas">
-          <li *ngFor="let alerta of alertas" (click)="seleccionarAlerta(alerta)"
+        <div class="lista-alertas">
+          <div *ngFor="let alerta of listaAlertas" (click)="seleccionarAlerta(alerta)"
             [class.seleccionado]="alerta === alertaSeleccionada">
-            {{ alerta.nombre }} - Habitación {{ alerta.habitacion }} - {{ alerta.hora }} - 🔴 {{ alerta.tipo }}
-          </li>
-        </ul>
+            <p class="nombre-paciente"> {{ alerta.paciente?.nombre_completo }}</p>
+            <p>Habitación {{ alerta.paciente?.habitacion }}</p>
+            <p>{{formatearAlerta(alerta.fecha!) }} </p>
+            {{ validarTipoAlerta( alerta.tipo!) }}
+            <p>Situación: {{filtrarAlerta(alerta)}}</p>
+          </div>
+        </div>
       </div>
       <!-- Columna derecha: Historial de solicitudes del paciente -->
       <div class="columna-derecha" *ngIf="alertaSeleccionada">
@@ -41,19 +45,22 @@
       <h3>Pacientes dados de alta</h3>
       <button (click)="darAltaNuevoPaciente()">+ Nuevo paciente</button>
     </div>
-    <div class="columnas">
 
+    <ul class=" lista-pacientes">
+      <li *ngFor="let paciente of listaPacientes" class="paciente" (click)="seleccionarPaciente(paciente)"
+        [class.seleccionado]="paciente === pacienteSeleccionado">
+        <span> {{ paciente.nombre_completo }} </span>- Edad: <span> {{ paciente.edad }} </span>- Habitación: <span>
+          {{
+          paciente.habitacion }}</span>
+      </li>
+    </ul>
+
+    <div class="columnas" *ngIf="pacienteSeleccionado">
       <div class="columna-izquierda">
-        <ul class=" lista-pacientes">
-          <li *ngFor="let paciente of listaPacientes" class="paciente" (click)="seleccionarPaciente(paciente)">
-            <span> {{ paciente.nombre_completo }} </span>- Edad: <span> {{ paciente.edad }} </span>- Habitación: <span>
-              {{
-              paciente.habitacion }}</span>
-          </li>
-        </ul>
-      </div>
-      <div class="columna-derecha" *ngIf="pacienteSeleccionado">
         <h3>Información del paciente </h3>
+        <div class="foto">
+          <img [src]="getPacienteFotoUrl(pacienteSeleccionado.foto_url)" alt="Foto paciente">
+        </div>
         <p>Nombre: {{ pacienteSeleccionado.nombre_completo }}</p>
         <p>Edad: {{ pacienteSeleccionado.edad }}</p>
         <p>Habitación: {{ pacienteSeleccionado.habitacion }}</p>
@@ -62,6 +69,28 @@
         <p>Correo de familiar: {{ pacienteSeleccionado.correo_familiar }}</p>
         <p>Número de familiar: {{ pacienteSeleccionado.telefono_familiar }}</p>
 
+      </div>
+      <div class="columna-derecha">
+        <h3>Historial del paciente </h3>
+        <ul class=" lista-bitacora">
+          <li *ngFor="let bitacora of bitacorasFiltradas" class="bitacora">
+            <p *ngIf="bitacora.accion === 'solicitud'">
+              El(la) paciente {{bitacora.alerta?.paciente.nombre_completo}} realizó una solicitud el
+              <span>{{formatearFecha(bitacora.fecha_accion)}}</span> . Las palabras utilizadas fueron:
+              <span>{{bitacora.alerta?.palabras_clave}}</span>
+            </p>
+            <p *ngIf="bitacora.accion === 'atendido-enfermero'">
+              El(la) paciente {{bitacora.alerta?.paciente.nombre_completo}} fue atendido el
+              <span>{{formatearFecha(bitacora.fecha_accion)}}</span> por el(la) enfermero(a)
+              <span>{{bitacora.usuario}}</span>. {{bitacora.descripcion}}
+            </p>
+            <p *ngIf="bitacora.accion === 'escalado'">
+              El(la) paciente {{bitacora.alerta?.paciente.nombre_completo}} fue escalado al médico el
+              <span>{{formatearFecha(bitacora.fecha_accion)}}</span> por el(la) enfermero(a)
+              <span>{{bitacora.usuario}}</span>. {{bitacora.descripcion}}
+            </p>
+          </li>
+        </ul>
       </div>
     </div>
   </div>

@@ -4,6 +4,9 @@ import { CommonModule } from '@angular/common';
 import { Alerta } from '../../core/models/alertas';
 import { AlertaService } from '../../core/services/alerta.service';
 import { AlertSocketService } from '../../core/services/alert-socket.service';
+import { getLocalISOStringWithMicroseconds } from '../../core/functions/functions';
+import { BitacoraService } from '../../core/services/bitacora.service';
+import { Bitacora } from '../../core/models/bitacora';
 
 @Component({
   selector: 'app-audio-recorder',
@@ -19,7 +22,8 @@ export class AudioRecorderComponent {
   constructor(
     private audioRecorderService: AudioRecorderService,
     private alertaService: AlertaService,
-    private alertSocketService: AlertSocketService
+    private alertSocketService: AlertSocketService,
+    private bitacoraService: BitacoraService
   ) {}
 
   startRecording() {
@@ -58,11 +62,9 @@ export class AudioRecorderComponent {
     const nuevaAlerta = new Alerta(
       0,
       id_paciente.toString(),
-      obtenerHoraActual(),
       'pendiente',
       '',
-      '',
-      new Date().toISOString(),
+      getLocalISOStringWithMicroseconds(),
       undefined,
       true,
       palabras_clave
@@ -72,6 +74,23 @@ export class AudioRecorderComponent {
       next: (response) => {
         console.log('✅ Alerta enviada', response);
         this.alertSocketService.sendMessage('¡Un paciente necesita ayuda!');
+
+        const nuevaBitacora = new Bitacora(
+          0,
+          response.alerta.id,
+          'solicitud',
+          '',
+          '',
+          getLocalISOStringWithMicroseconds()
+        );
+        this.bitacoraService.add(nuevaBitacora).subscribe({
+          next: (response) => {
+            console.log('Bitácora enviada con éxito', response);
+          },
+          error: (err) => {
+            console.error('Error al enviar la bitácora', err);
+          },
+        });
       },
       error: (err) => {
         console.error('⚠️ Error al enviar la alerta', err);

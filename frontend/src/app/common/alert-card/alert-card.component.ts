@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../environment/environment';
+import { formatearFechaAlerta } from '../../core/functions/functions';
 
 @Component({
   selector: 'app-alert-card',
@@ -21,15 +22,8 @@ export class AlertCardComponent {
     this.cardClick.emit();
   }
 
-  validarHora(hora: string): string {
-    const [horasStr, _] = hora.split(':');
-    const horas = parseInt(horasStr, 10);
-
-    if (isNaN(horas) || horas < 0 || horas > 23) {
-      return 'Hora inválida';
-    }
-
-    return horas < 12 ? 'a.m.' : 'p.m.';
+  validarHora(fechaIso: string): string {
+    return formatearFechaAlerta(fechaIso);
   }
   getPacienteFotoUrl(fotoUrl: string): string {
     return `${environment.apiUrl}${fotoUrl}`;
