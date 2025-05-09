@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common'; // Si usas directivas comunes
 import { SpinnerComponent } from '../../common/spinner/spinner.component';
 import { HeaderComponent } from '../../common/header/header.component';
@@ -13,7 +13,8 @@ import { Bitacora } from '../../core/models/bitacora';
 import { environment } from '../../environment/environment';
 import { AlertaService } from '../../core/services/alerta.service';
 import { Alerta } from '../../core/models/alertas';
-import { formatearFechaAlerta } from '../../core/functions/functions';
+import { AlertSocketService } from '../../core/services/alert-socket.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home-medico',
@@ -22,13 +23,15 @@ import { formatearFechaAlerta } from '../../core/functions/functions';
   templateUrl: './home-medico.component.html',
   styleUrls: ['./home-medico.component.scss'],
 })
-export class HomeMedicoComponent implements OnInit {
+export class HomeMedicoComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private authService: AuthService,
     private pacienteService: PacienteService,
     private bitacoraService: BitacoraService,
-    private alertaService: AlertaService
+    private alertSocketService: AlertSocketService,
+    private alertaService: AlertaService,
+    private ngZone: NgZone // Inyectamos NgZone
   ) {}
   handleLogout() {
     this.authService.logout();
@@ -38,11 +41,56 @@ export class HomeMedicoComponent implements OnInit {
   tab: 'solicitudes' | 'pacientes' = 'solicitudes';
   listaPacientes: Paciente[] = [];
   listaBitacora: Bitacora[] = [];
+  listaBitacoraEscaladas: Bitacora[] = [];
   listaAlertas: Alerta[] = [];
+  mensajes: string[] = [];
+  private sub!: Subscription;
+  userInteracted = false;
+
   ngOnInit(): void {
     const nombre = this.authService.getNombre();
     this.nombreUsuario = nombre ?? 'Usuario';
 
+    this.cargarPacientes();
+    this.cargarBitacoras();
+    this.cargarAlertas();
+    this.recibirAlerta();
+  }
+  ngOnDestroy(): void {
+    this.sub.unsubscribe();
+  }
+  recibirAlerta() {
+    this.sub = this.alertSocketService.getMessages().subscribe((msg) => {
+      console.log('Alerta recibida:', msg);
+      if (msg === 'escalamiento') {
+        this.mensajes.push('¡Un paciente necesita ayuda!');
+        // Reproducir sonido de alerta
+        this.reproducirSonido();
+        // Recargar las alertas
+        this.ngZone.run(() => {
+          this.cargarAlertas();
+          this.cargarBitacoras(); // <<--- AÑADE ESTA LÍNEA
+        });
+
+        setTimeout(() => {
+          this.mensajes.shift();
+        }, 5000);
+      }
+    });
+  }
+  cargarAlertas() {
+    this.alertaService.getAll().subscribe({
+      next: (data) => {
+        this.listaAlertas = data.filter(
+          (alerta) => alerta.estado === 'escalada'
+        );
+      },
+      error: (err) => {
+        console.log('No se pudo obtener la lista de bitácoras', err);
+      },
+    });
+  }
+  cargarPacientes() {
     this.pacienteService.getAll().subscribe({
       next: (data) => {
         this.listaPacientes = data;
@@ -51,20 +99,14 @@ export class HomeMedicoComponent implements OnInit {
         console.log('No se pudo obtener la lista de pacientes', err);
       },
     });
+  }
+  cargarBitacoras() {
     this.bitacoraService.getAll().subscribe({
       next: (data) => {
         this.listaBitacora = data;
-      },
-      error: (err) => {
-        console.log('No se pudo obtener la lista de bitácoras', err);
-      },
-    });
-    this.alertaService.getAll().subscribe({
-      next: (data) => {
-        this.listaAlertas = data.filter(
-          (alerta) => alerta.estado === 'escalada'
+        this.listaBitacoraEscaladas = data.filter(
+          (bitacora) => bitacora.accion === 'escalado'
         );
-        console.log(this.listaAlertas);
       },
       error: (err) => {
         console.log('No se pudo obtener la lista de bitácoras', err);
@@ -72,42 +114,21 @@ export class HomeMedicoComponent implements OnInit {
     });
   }
 
-  alertas = [
-    {
-      nombre: 'Sr. Juan Pérez',
-      habitacion: 12,
-      hora: '11:47 AM',
-      tipo: 'EMERGENCIA',
-      historial: [
-        { fecha: '2025-04-14', descripcion: 'Llamó por dolor en el pecho' },
-        {
-          fecha: '2025-04-12',
-          descripcion: 'Solicitó asistencia para ir al baño',
-        },
-      ],
-    },
-    {
-      nombre: 'Sr. Molly Medina',
-      habitacion: 12,
-      hora: '09:43 AM',
-      tipo: 'EMERGENCIA MENOR',
-      historial: [
-        { fecha: '2025-04-14', descripcion: 'Llamó por dolor en el pecho' },
-        {
-          fecha: '2025-04-12',
-          descripcion: 'Solicitó asistencia para ir al baño',
-        },
-      ],
-    },
-    // Puedes agregar más alertas aquí
-  ];
-
   alertaSeleccionada: any = null;
+  bitacoraSeleccionada: any = null;
   pacienteSeleccionado: any = null;
   bitacorasFiltradas: any = null;
+  bitacorasFiltradasSolicitudes: any = null;
+  alertasFiltradas: any = null;
 
-  seleccionarAlerta(alerta: any) {
-    this.alertaSeleccionada = alerta;
+  seleccionarBitacora(bitacora: any) {
+    this.bitacoraSeleccionada = bitacora;
+    this.bitacorasFiltradasSolicitudes = this.listaBitacora.filter(
+      (bitacora) =>
+        bitacora.alerta?.id_paciente ===
+        this.bitacoraSeleccionada.alerta?.id_paciente.toString()
+    );
+    console.log(this.bitacorasFiltradas);
   }
   seleccionarPaciente(paciente: any) {
     this.pacienteSeleccionado = paciente;
@@ -117,9 +138,6 @@ export class HomeMedicoComponent implements OnInit {
         bitacora.alerta?.id_paciente === this.pacienteSeleccionado.id.toString()
     );
     console.log(this.bitacorasFiltradas);
-  }
-  filtarBitacoras(id_paciente: string) {
-    console.log(id_paciente);
   }
 
   darAltaNuevoPaciente() {
@@ -159,21 +177,10 @@ export class HomeMedicoComponent implements OnInit {
     } de ${anio} a las ${horaNum}:${minuto}:${segundo} ${sufijo}`;
   }
 
-  formatearAlerta(fecha: string) {
-    return formatearFechaAlerta(fecha);
-  }
-  // Resultado: "8 de mayo de 2025 a las 3:58:27 p.m."
-
   getPacienteFotoUrl(fotoUrl: string): string {
     return `${environment.apiUrl}${fotoUrl}`;
   }
-  filtrarAlerta(alerta: Alerta): string {
-    const desc = this.listaBitacora.filter(
-      (bitacora) =>
-        bitacora.id_alerta === alerta.id && bitacora.accion === 'escalado'
-    );
-    return desc[0].descripcion;
-  }
+
   validarTipoAlerta(tipo: string): string {
     switch (tipo) {
       case 'naranja':
@@ -184,5 +191,13 @@ export class HomeMedicoComponent implements OnInit {
         break;
     }
     return '';
+  }
+
+  reproducirSonido(): void {
+    if (!this.userInteracted) return; // Evita reproducir si no ha habido interacción
+    const audio = new Audio();
+    audio.src = '../../../assets/sounds/alerta.mp3'; // Asegúrate de tener este archivo
+    audio.load();
+    audio.play();
   }
 }

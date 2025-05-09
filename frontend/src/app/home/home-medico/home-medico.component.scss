@@ -4,16 +4,27 @@
   margin: 10px 20px;
   button {
     padding: 10px 20px;
-    background: #eee;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
+    transition: all 0.2s ease;
     &.active {
       background: #2e2e7f;
       color: white;
     }
+    &:not(.active):hover {
+      background-color: #e1e1e1;
+    }
   }
+}
+.tabs button:hover {
+  background-color: #e1e1e1;
+}
+.tabs button.active:hover {
+  background-color: #2e2e7f;
 }
 
 .contenido-solicitudes {
@@ -31,7 +42,7 @@
   width: 100%;
   background: #f9f9f9;
   border-radius: 10px;
-  padding: 30px;
+  padding: 25px 30px;
 
   background-color: #fff;
   border-radius: 12px;
@@ -49,6 +60,9 @@
   border-bottom: 1px solid #ccc;
   cursor: pointer;
 }
+.lista-alertas div:last-child {
+  border-bottom: none;
+}
 .nombre-paciente {
   color: var(--primary-purple);
   font-weight: 700;
@@ -62,6 +76,9 @@
 .lista-pacientes li {
   padding: 10px;
   border-bottom: 1px solid #ccc;
+}
+.lista-pacientes li:last-child {
+  border-bottom: none;
 }
 
 .encabezado {

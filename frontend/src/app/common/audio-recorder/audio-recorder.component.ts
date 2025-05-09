@@ -51,14 +51,6 @@ export class AudioRecorderComponent {
   }
 
   enviar(id_paciente: number, palabras_clave: string[]) {
-    const obtenerHoraActual = () => {
-      const ahora = new Date();
-      return `${ahora.getHours().toString().padStart(2, '0')}:${ahora
-        .getMinutes()
-        .toString()
-        .padStart(2, '0')}`;
-    };
-
     const nuevaAlerta = new Alerta(
       0,
       id_paciente.toString(),
@@ -73,7 +65,7 @@ export class AudioRecorderComponent {
     this.alertaService.add(nuevaAlerta).subscribe({
       next: (response) => {
         console.log('✅ Alerta enviada', response);
-        this.alertSocketService.sendMessage('¡Un paciente necesita ayuda!');
+        this.alertSocketService.sendMessage('ayuda');
 
         const nuevaBitacora = new Bitacora(
           0,

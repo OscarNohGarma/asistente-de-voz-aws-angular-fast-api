@@ -18,7 +18,10 @@ import {
 } from '@angular/forms';
 import { BitacoraService } from '../../core/services/bitacora.service';
 import { Bitacora } from '../../core/models/bitacora';
-import { formatearFechaAlerta } from '../../core/functions/functions';
+import {
+  formatearFechaAlerta,
+  getLocalISOStringWithMicroseconds,
+} from '../../core/functions/functions';
 
 @Component({
   selector: 'app-home-enfermeria',
@@ -67,8 +70,18 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
     this.nombreUsuario = nombre ?? 'Usuario';
 
     this.cargarAlertas(); // <-- Llamamos esta función al iniciar
+    this.recibirAlertas();
+  }
 
-    console.log('Iniciando suscripción de alertas...');
+  handleLogout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+  ngOnDestroy(): void {
+    this.sub.unsubscribe();
+  }
+
+  recibirAlertas() {
     this.sub = this.alertSocketService.getMessages().subscribe((msg) => {
       console.log('Alerta recibida:', msg);
       if (msg === 'ayuda') {
@@ -86,15 +99,6 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
       }
     });
   }
-
-  handleLogout() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
-  }
-  ngOnDestroy(): void {
-    this.sub.unsubscribe();
-  }
-
   cargarAlertas(): void {
     this.alertaService.getAll().subscribe({
       next: (data) => {
@@ -144,21 +148,6 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
     this.alertaSeleccionada = undefined;
   }
 
-  confirmarAlerta(): void {
-    // this.alertaService.confirmar(this.alertaSeleccionada.id).subscribe(() => {
-    //   this.cargarAlertas();
-    //   this.cerrarOverlay();
-    // });
-  }
-
-  escalarAlerta(): void {
-    if (!this.alertaSeleccionada) return;
-    if (this.sendForm.invalid) {
-      this.sendForm.markAllAsTouched();
-      return;
-    }
-  }
-
   onSubmit() {
     this.submitted = true;
 
@@ -200,6 +189,9 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
           this.bitacoraService.add(nuevaBitacora).subscribe({
             next: (response) => {
               console.log('Bitácora enviada con éxito', response);
+              if (this.requiereEscalamiento()) {
+                this.alertSocketService.sendMessage('escalamiento');
+              }
             },
             error: (err) => {
               console.error('Error al enviar la bitácora', err);
@@ -223,18 +215,4 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
   validarHora(fechaIso: string): string {
     return formatearFechaAlerta(fechaIso);
   }
-}
-function getLocalISOStringWithMicroseconds(): string {
-  const now = new Date();
-  const pad = (n: number, width = 2) => n.toString().padStart(width, '0');
-
-  const year = now.getFullYear();
-  const month = pad(now.getMonth() + 1);
-  const day = pad(now.getDate());
-  const hour = pad(now.getHours());
-  const minute = pad(now.getMinutes());
-  const second = pad(now.getSeconds());
-  const millis = now.getMilliseconds().toString().padStart(3, '0');
-
-  return `${year}-${month}-${day}T${hour}:${minute}:${second}.${millis}000`;
 }
