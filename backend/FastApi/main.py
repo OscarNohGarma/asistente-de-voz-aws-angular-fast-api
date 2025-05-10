@@ -1,5 +1,6 @@
 from datetime import datetime
 import shutil
+from typing import Optional
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from pathlib import Path
 from model.bitacora_connection import BitacoraConnection
@@ -212,14 +213,100 @@ async def insert_paciente(
 
 
 @app.put("/paciente/{id}")
-def update_paciente(id: str, paciente_data: PacienteSchema):
-    data = paciente_data.dict()
-    data["id"] = id
-    paciente_conn.update(id, data)
-    return {
-        "message": "Paciente actualizado correctamente",
-        "paciente_actualizado": data,
-    }
+async def update_paciente(
+    id: str,
+    nombre_completo: str = Form(...),
+    edad: int = Form(...),
+    habitacion: str = Form(...),
+    diagnostico: str = Form(...),
+    fecha_ingreso: datetime = Form(...),
+    activo: bool = Form(...),
+    telefono_familiar: str = Form(...),
+    correo_familiar: str = Form(...),
+    file: Optional[UploadFile] = File(None),
+):
+    try:
+        print("📥 Iniciando actualización de paciente")
+
+        paciente_existente = paciente_conn.read_one(id)
+        if not paciente_existente:
+            raise HTTPException(status_code=404, detail="Paciente no encontrado")
+
+        # Imprimir la respuesta para depuración
+        print("Paciente existente:", paciente_existente)
+
+        # Desempaquetar los 11 valores de la tupla
+        (
+            id_existente,
+            nombre_completo_existente,
+            foto_url_existente,
+            edad_existente,
+            habitacion_existente,
+            diagnostico_existente,
+            fecha_ingreso_existente,
+            activo_existente,
+            telefono_familiar_existente,
+            correo_familiar_existente,
+            foto_extra,
+        ) = paciente_existente
+
+        # Si se envió una nueva foto
+        if file:
+            print(f"📸 Guardando nueva foto: {file.filename}")
+            upload_folder = Path("static/pacientes_fotos")
+            upload_folder.mkdir(parents=True, exist_ok=True)
+            # Eliminar la foto anterior si no es la de default
+            if foto_url_existente and "default.jpg" not in foto_url_existente:
+                try:
+                    foto_anterior_path = Path(
+                        foto_url_existente.strip("/")
+                    )  # elimina / inicial
+                    if foto_anterior_path.exists():
+                        foto_anterior_path.unlink()
+                        print(f"🗑️ Foto anterior eliminada: {foto_anterior_path}")
+                except Exception as delete_error:
+                    print(f"⚠️ No se pudo eliminar la foto anterior: {delete_error}")
+
+            filename = f"{nombre_completo.replace(' ', '_')}_{edad}.jpg"
+            file_path = upload_folder / filename
+
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+
+            foto_url = f"/static/pacientes_fotos/{filename}"
+        else:
+            print("📸 No se envió nueva foto, manteniendo la actual")
+            foto_url = (
+                foto_url_existente
+                if foto_url_existente
+                else "/static/pacientes_fotos/default.jpg"
+            )  # Fallback si no existe foto
+
+        # Datos a actualizar
+        data = {
+            "id": id,
+            "nombre_completo": nombre_completo,
+            "foto_url": foto_url,
+            "edad": edad,
+            "habitacion": habitacion,
+            "diagnostico": diagnostico,
+            "fecha_ingreso": fecha_ingreso,
+            "activo": activo,
+            "telefono_familiar": telefono_familiar,
+            "correo_familiar": correo_familiar,
+        }
+
+        # Actualizar en la base de datos
+        paciente_conn.update(id, data)
+
+        return {
+            "message": "Paciente actualizado correctamente",
+            "paciente_actualizado": data,
+        }
+
+    except Exception as e:
+        print(f"❌ Error en servidor: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.delete("/paciente/{id}")

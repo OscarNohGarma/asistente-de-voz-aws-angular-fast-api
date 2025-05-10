@@ -195,4 +195,9 @@ export class HomeMedicoComponent implements OnInit, OnDestroy {
   handleAddPaciente() {
     this.router.navigate(['/home/medico/alta-paciente']);
   }
+  editarPaciente(paciente: any) {
+    this.router.navigate(['/home/medico/alta-paciente'], {
+      queryParams: { id: paciente.id },
+    });
+  }
 }

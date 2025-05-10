@@ -79,6 +79,7 @@
         <p>Fecha de ingreso: {{ formatearFecha(pacienteSeleccionado.fecha_ingreso ) }}</p>
         <p>Correo de familiar: {{ pacienteSeleccionado.correo_familiar }}</p>
         <p>Número de familiar: {{ pacienteSeleccionado.telefono_familiar }}</p>
+        <button (click)="editarPaciente(pacienteSeleccionado)">Editar</button>
 
       </div>
       <div class="columna-derecha">
