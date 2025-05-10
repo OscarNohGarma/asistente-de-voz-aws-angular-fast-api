@@ -26,12 +26,7 @@ import {
 @Component({
   selector: 'app-home-enfermeria',
   standalone: true,
-  imports: [
-    CommonModule,
-    AlertCardComponent,
-    HeaderComponent,
-    ReactiveFormsModule,
-  ],
+  imports: [CommonModule, AlertCardComponent, ReactiveFormsModule],
   providers: [AlertaService],
   templateUrl: './home-enfermeria.component.html',
   styleUrls: ['./home-enfermeria.component.scss'],
@@ -48,7 +43,6 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
   submitted = false;
 
   constructor(
-    private router: Router,
     private authService: AuthService,
     private alertaService: AlertaService,
     private alertSocketService: AlertSocketService,
@@ -73,10 +67,6 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
     this.recibirAlertas();
   }
 
-  handleLogout() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
-  }
   ngOnDestroy(): void {
     this.sub.unsubscribe();
   }

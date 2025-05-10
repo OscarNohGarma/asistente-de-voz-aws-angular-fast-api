@@ -2,8 +2,6 @@ import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common'; // Si usas directivas comunes
 import { SpinnerComponent } from '../../common/spinner/spinner.component';
 import { HeaderComponent } from '../../common/header/header.component';
-import { AppSolicitudesHistorialComponent } from './app-solicitudes-historial/app-solicitudes-historial.component'; // Ajusta el camino
-import { AppPacientesListaComponent } from './app-pacientes-lista/app-pacientes-lista.component'; // Ajusta el camino
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { PacienteService } from '../../core/services/paciente.service';
@@ -33,10 +31,7 @@ export class HomeMedicoComponent implements OnInit, OnDestroy {
     private alertaService: AlertaService,
     private ngZone: NgZone // Inyectamos NgZone
   ) {}
-  handleLogout() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
-  }
+
   nombreUsuario: string = '';
   tab: 'solicitudes' | 'pacientes' = 'solicitudes';
   listaPacientes: Paciente[] = [];
@@ -140,10 +135,6 @@ export class HomeMedicoComponent implements OnInit, OnDestroy {
     console.log(this.bitacorasFiltradas);
   }
 
-  darAltaNuevoPaciente() {
-    alert('Función para dar de alta a un nuevo paciente.');
-  }
-
   formatearFecha(fechaStr: string): string {
     const meses = [
       'enero',
@@ -199,5 +190,9 @@ export class HomeMedicoComponent implements OnInit, OnDestroy {
     audio.src = '../../../assets/sounds/alerta.mp3'; // Asegúrate de tener este archivo
     audio.load();
     audio.play();
+  }
+
+  handleAddPaciente() {
+    this.router.navigate(['/home/medico/alta-paciente']);
   }
 }

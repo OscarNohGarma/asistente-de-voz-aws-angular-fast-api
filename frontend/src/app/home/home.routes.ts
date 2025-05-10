@@ -3,18 +3,43 @@ import { Routes } from '@angular/router';
 import { AuthGuard } from '../auth/auth.guard';
 import { HomeEnfermeriaComponent } from './home-enfermeria/home-enfermeria.component';
 import { HomeMedicoComponent } from './home-medico/home-medico.component';
+import { PacienteFormComponent } from './home-medico/paciente-form/paciente-form.component';
+import { HomeComponent } from './home.component';
+import { RedirectComponent } from '../common/redirect/redirect.component';
 
 export const homeRoutes: Routes = [
   {
-    path: 'enfermeria',
-    component: HomeEnfermeriaComponent,
+    path: '',
+    component: HomeComponent,
     canActivate: [AuthGuard],
-    data: { roles: ['enfermero'] },
-  },
-  {
-    path: 'medico',
-    component: HomeMedicoComponent,
-    canActivate: [AuthGuard],
-    data: { roles: ['medico'] },
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'redirigir',
+      },
+      {
+        path: 'redirigir',
+        component: RedirectComponent, // este lo creas tú
+      },
+      {
+        path: 'enfermeria',
+        component: HomeEnfermeriaComponent,
+        canActivate: [AuthGuard],
+        data: { roles: ['enfermero'] },
+      },
+      {
+        path: 'medico',
+        component: HomeMedicoComponent,
+        canActivate: [AuthGuard],
+        data: { roles: ['medico'] },
+      },
+      {
+        path: 'medico/alta-paciente',
+        component: PacienteFormComponent,
+        canActivate: [AuthGuard],
+        data: { roles: ['medico'] },
+      },
+    ],
   },
 ];

@@ -1,6 +1,3 @@
-<!-- Header superior como en enfermería -->
-<app-header [nombreUsuario]="nombreUsuario" (cerrarSesion)="handleLogout()"></app-header>
-
 <!-- Navegación por pestañas -->
 <div class="container">
 
@@ -57,7 +54,7 @@
   <div *ngIf="tab === 'pacientes'" class="contenido-pacientes">
     <div class="encabezado">
       <h3>Pacientes dados de alta</h3>
-      <button (click)="darAltaNuevoPaciente()">+ Nuevo paciente</button>
+      <button (click)="handleAddPaciente()">+ Nuevo paciente</button>
     </div>
 
     <ul class=" lista-pacientes">
