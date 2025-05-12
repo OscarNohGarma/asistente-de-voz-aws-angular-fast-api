@@ -13,11 +13,13 @@ import { AlertaService } from '../../core/services/alerta.service';
 import { Alerta } from '../../core/models/alertas';
 import { AlertSocketService } from '../../core/services/alert-socket.service';
 import { Subscription } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { getLocalISOStringWithMicroseconds } from '../../core/functions/functions';
 
 @Component({
   selector: 'app-home-medico',
   standalone: true,
-  imports: [CommonModule, HeaderComponent], // Importar lo que necesites
+  imports: [CommonModule, HeaderComponent, SpinnerComponent], // Importar lo que necesites
   templateUrl: './home-medico.component.html',
   styleUrls: ['./home-medico.component.scss'],
 })
@@ -28,6 +30,7 @@ export class HomeMedicoComponent implements OnInit, OnDestroy {
     private pacienteService: PacienteService,
     private bitacoraService: BitacoraService,
     private alertSocketService: AlertSocketService,
+    private http: HttpClient,
     private alertaService: AlertaService,
     private ngZone: NgZone // Inyectamos NgZone
   ) {}
@@ -41,10 +44,16 @@ export class HomeMedicoComponent implements OnInit, OnDestroy {
   mensajes: string[] = [];
   private sub!: Subscription;
   userInteracted = false;
+  loading: boolean = false;
 
   ngOnInit(): void {
     const nombre = this.authService.getNombre();
     this.nombreUsuario = nombre ?? 'Usuario';
+
+    const tabGuardada = localStorage.getItem('medicoTab') as
+      | 'solicitudes'
+      | 'pacientes';
+    this.tab = tabGuardada ?? 'solicitudes';
 
     this.cargarPacientes();
     this.cargarBitacoras();
@@ -88,7 +97,9 @@ export class HomeMedicoComponent implements OnInit, OnDestroy {
   cargarPacientes() {
     this.pacienteService.getAll().subscribe({
       next: (data) => {
-        this.listaPacientes = data;
+        this.listaPacientes = data.filter(
+          (paciente) => paciente.activo === true
+        );
       },
       error: (err) => {
         console.log('No se pudo obtener la lista de pacientes', err);
@@ -100,7 +111,9 @@ export class HomeMedicoComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.listaBitacora = data;
         this.listaBitacoraEscaladas = data.filter(
-          (bitacora) => bitacora.accion === 'escalado'
+          (bitacora) =>
+            bitacora.accion === 'escalado' &&
+            bitacora.alerta?.estado !== 'confirmada'
         );
       },
       error: (err) => {
@@ -115,7 +128,10 @@ export class HomeMedicoComponent implements OnInit, OnDestroy {
   bitacorasFiltradas: any = null;
   bitacorasFiltradasSolicitudes: any = null;
   alertasFiltradas: any = null;
-
+  cambiarTab(nuevaTab: 'solicitudes' | 'pacientes') {
+    this.tab = nuevaTab;
+    localStorage.setItem('medicoTab', nuevaTab);
+  }
   seleccionarBitacora(bitacora: any) {
     this.bitacoraSeleccionada = bitacora;
     this.bitacorasFiltradasSolicitudes = this.listaBitacora.filter(
@@ -123,7 +139,6 @@ export class HomeMedicoComponent implements OnInit, OnDestroy {
         bitacora.alerta?.id_paciente ===
         this.bitacoraSeleccionada.alerta?.id_paciente.toString()
     );
-    console.log(this.bitacorasFiltradas);
   }
   seleccionarPaciente(paciente: any) {
     this.pacienteSeleccionado = paciente;
@@ -193,11 +208,91 @@ export class HomeMedicoComponent implements OnInit, OnDestroy {
   }
 
   handleAddPaciente() {
+    localStorage.setItem('medicoTab', this.tab); // Guardar tab actual
     this.router.navigate(['/home/medico/alta-paciente']);
   }
   editarPaciente(paciente: any) {
     this.router.navigate(['/home/medico/alta-paciente'], {
       queryParams: { id: paciente.id },
     });
+  }
+  handleBajaPaciente(paciente: any) {
+    const formData = new FormData();
+
+    // Llenamos todos los campos esperados por el backend
+    formData.append('nombre_completo', paciente.nombre_completo);
+    formData.append('edad', paciente.edad.toString());
+    formData.append('habitacion', paciente.habitacion);
+    formData.append('diagnostico', paciente.diagnostico);
+    formData.append('fecha_ingreso', paciente.fecha_ingreso); // Asegúrate que esté en formato correcto
+    formData.append('telefono_familiar', paciente.telefono_familiar);
+    formData.append('correo_familiar', paciente.correo_familiar);
+    formData.append('activo', 'false');
+
+    this.loading = true;
+
+    this.http
+      .put(`${environment.apiUrl}/paciente/${paciente.id}`, formData)
+      .subscribe({
+        next: (response) => {
+          setTimeout(() => {
+            console.log('Paciente dado de baja:', response);
+            this.cargarPacientes();
+            this.pacienteSeleccionado = null;
+            this.loading = false;
+          }, 1000);
+          // Aquí podrías refrescar la lista o mostrar un mensaje
+        },
+        error: (error) => {
+          console.error('Error al dar de baja al paciente:', error);
+          this.loading = false;
+        },
+      });
+  }
+  confirmarAtencion() {
+    if (!this.bitacoraSeleccionada || !this.bitacoraSeleccionada.alerta) return;
+    this.loading = true;
+    const nuevaAlerta = {
+      ...this.bitacoraSeleccionada.alerta,
+      estado: 'confirmada',
+    };
+
+    this.alertaService
+      .update(this.bitacoraSeleccionada.id_alerta, nuevaAlerta)
+      .subscribe({
+        next: (data) => {
+          console.log('Alerta actualizada', data);
+          const nuevaBitacora = new Bitacora(
+            0,
+            this.bitacoraSeleccionada.id_alerta,
+            'atendido-medico',
+            this.nombreUsuario,
+            this.bitacoraSeleccionada.descripcion,
+            getLocalISOStringWithMicroseconds()
+          );
+          console.log(nuevaBitacora);
+
+          this.bitacoraService.add(nuevaBitacora).subscribe({
+            next: (response) => {
+              setTimeout(() => {
+                console.log('Bitácora enviada con éxito', response);
+                this.loading = false;
+                this.cargarAlertas();
+                this.cargarBitacoras();
+                this.alertaSeleccionada = null;
+                this.bitacoraSeleccionada = null;
+              }, 1000);
+            },
+            error: (err) => {
+              console.error('Error al enviar la bitácora', err);
+              this.loading = false;
+            },
+          });
+        },
+        error: (err) => {
+          console.log('Error al actualizar la alerta', err);
+          this.loading = false;
+        },
+      });
   }
 }

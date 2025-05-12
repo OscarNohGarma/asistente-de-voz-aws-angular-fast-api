@@ -9,12 +9,13 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { SpinnerComponent } from '../../../common/spinner/spinner.component';
 
 @Component({
   selector: 'app-paciente-form',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, SpinnerComponent],
   templateUrl: './paciente-form.component.html',
   styleUrl: './paciente-form.component.scss',
 })
@@ -33,12 +34,14 @@ export class PacienteFormComponent implements OnInit {
   editting: boolean = false;
   currentId: string = '';
   fotoUrl: string = '';
+  loading = false;
   previewUrl: string | ArrayBuffer | null = ''; // Para la vista previa de la imagen
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
     private pacienteService: PacienteService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {
     this.sendForm = this.fb.group({
       nombre_completo: ['', [Validators.required]],
@@ -91,6 +94,7 @@ export class PacienteFormComponent implements OnInit {
 
       return;
     }
+    this.loading = true;
     const formData = new FormData();
     Object.keys(this.sendForm.value).forEach((key) => {
       formData.append(key, this.sendForm.value[key]);
@@ -108,19 +112,29 @@ export class PacienteFormComponent implements OnInit {
         .put(`${environment.apiUrl}/paciente/${this.currentId}`, formData)
         .subscribe(
           (response) => {
-            console.log('Paciente insertado:', response);
+            setTimeout(() => {
+              console.log('Paciente actualizado:', response);
+              this.loading = false;
+              this.router.navigate(['home/medico']);
+            }, 1000);
           },
           (error) => {
-            console.error('Error al insertar paciente:', error);
+            console.error('Error al actualizar paciente:', error);
+            this.loading = false;
           }
         );
     } else {
       this.http.post(`${environment.apiUrl}/paciente`, formData).subscribe(
         (response) => {
-          console.log('Paciente insertado:', response);
+          setTimeout(() => {
+            console.log('Paciente insertado:', response);
+            this.loading = false;
+            this.router.navigate(['home/medico']);
+          }, 1000);
         },
         (error) => {
           console.error('Error al insertar paciente:', error);
+          this.loading = false;
         }
       );
     }

@@ -2,8 +2,8 @@
 <div class="container">
 
   <div class="tabs">
-    <button [class.active]="tab === 'solicitudes'" (click)="tab = 'solicitudes'">Solicitudes</button>
-    <button [class.active]="tab === 'pacientes'" (click)="tab = 'pacientes'">Pacientes dados de alta</button>
+    <button [class.active]="tab === 'solicitudes'" (click)="cambiarTab('solicitudes')">Solicitudes</button>
+    <button [class.active]="tab === 'pacientes'" (click)="cambiarTab('pacientes')">Pacientes dados de alta</button>
   </div>
 
   <!-- Contenido por pestañas -->
@@ -14,37 +14,53 @@
       <div class="columna-izquierda">
         <div class="lista-alertas">
           <div *ngFor="let bitacora of listaBitacoraEscaladas" (click)="seleccionarBitacora(bitacora)"
-            [class.seleccionado]="bitacora === bitacoraSeleccionada">
+            [class.seleccionado]="bitacora === bitacoraSeleccionada" class="solicitud">
             <p class="nombre-paciente"> {{ bitacora.alerta?.paciente?.nombre_completo }}</p>
             <p>Habitación {{ bitacora.alerta?.paciente?.habitacion }}</p>
             <p>{{formatearFecha(bitacora.fecha_accion) }} </p>
             {{ validarTipoAlerta( bitacora.alerta?.tipo!) }}
             <p>Situación: {{bitacora.descripcion}}</p>
+            <div class="div-confirmar" [class.visible]="bitacoraSeleccionada===bitacora">
+              <button class="confirmar" (click)="confirmarAtencion()"
+                *ngIf="bitacoraSeleccionada &&( bitacoraSeleccionada.id === bitacora.id)">
+                Confirmar atención médica
+              </button>
+              <app-spinner *ngIf="loading" />
+            </div>
           </div>
         </div>
       </div>
       <!-- Columna derecha: Historial de solicitudes del paciente -->
       <div class="columna-derecha" *ngIf="bitacoraSeleccionada">
         <h3>Historial de solicitudes </h3>
-        <ul>
-          <li *ngFor="let bitacora of bitacorasFiltradasSolicitudes" class="bitacora">
-            <p *ngIf="bitacora.accion === 'solicitud'">
-              El(la) paciente {{bitacora.alerta?.paciente.nombre_completo}} realizó una solicitud el
-              <span>{{formatearFecha(bitacora.fecha_accion)}}</span> . Las palabras utilizadas fueron:
-              <span>{{bitacora.alerta?.palabras_clave}}</span>
-            </p>
-            <p *ngIf="bitacora.accion === 'atendido-enfermero'">
-              El(la) paciente {{bitacora.alerta?.paciente.nombre_completo}} fue atendido el
-              <span>{{formatearFecha(bitacora.fecha_accion)}}</span> por el(la) enfermero(a)
-              <span>{{bitacora.usuario}}</span>. {{bitacora.descripcion}}
-            </p>
-            <p *ngIf="bitacora.accion === 'escalado'">
-              El(la) paciente {{bitacora.alerta?.paciente.nombre_completo}} fue escalado al médico el
-              <span>{{formatearFecha(bitacora.fecha_accion)}}</span> por el(la) enfermero(a)
-              <span>{{bitacora.usuario}}</span>. {{bitacora.descripcion}}
-            </p>
-          </li>
-        </ul>
+        <div class="lista-bitacora">
+
+          <ul>
+            <li *ngFor="let bitacora of bitacorasFiltradasSolicitudes" class="bitacora">
+              <p *ngIf="bitacora.accion === 'solicitud'">
+                El(la) paciente {{bitacora.alerta?.paciente.nombre_completo}} realizó una solicitud el
+                <span>{{formatearFecha(bitacora.fecha_accion)}}</span> . Las palabras utilizadas fueron:
+                <span>{{bitacora.alerta?.palabras_clave}}</span>
+              </p>
+              <p *ngIf="bitacora.accion === 'atendido-enfermero'">
+                El(la) paciente {{bitacora.alerta?.paciente.nombre_completo}} fue atendido el
+                <span>{{formatearFecha(bitacora.fecha_accion)}}</span> por el(la) enfermero(a)
+                <span>{{bitacora.usuario}}</span>. {{bitacora.descripcion}}
+              </p>
+              <p *ngIf="bitacora.accion === 'escalado'">
+                El(la) paciente {{bitacora.alerta?.paciente.nombre_completo}} fue escalado al médico el
+                <span>{{formatearFecha(bitacora.fecha_accion)}}</span> por el(la) enfermero(a)
+                <span>{{bitacora.usuario}}</span>. {{bitacora.descripcion}}
+              </p>
+              <p *ngIf="bitacora.accion === 'atendido-medico'">
+                El(la) paciente {{bitacora.alerta?.paciente.nombre_completo}} fue atendido por el(la) médico
+                <span>{{bitacora.usuario}}</span> el
+                <span>{{formatearFecha(bitacora.fecha_accion)}}</span>. <span>Situación recibida:</span>
+                {{bitacora.descripcion}}
+              </p>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
 
@@ -79,8 +95,12 @@
         <p>Fecha de ingreso: {{ formatearFecha(pacienteSeleccionado.fecha_ingreso ) }}</p>
         <p>Correo de familiar: {{ pacienteSeleccionado.correo_familiar }}</p>
         <p>Número de familiar: {{ pacienteSeleccionado.telefono_familiar }}</p>
-        <button (click)="editarPaciente(pacienteSeleccionado)">Editar</button>
+        <div class="buttons-div">
 
+          <button class="edit" (click)="editarPaciente(pacienteSeleccionado)">Editar información del paciente</button>
+          <button class="delete" (click)="handleBajaPaciente(pacienteSeleccionado)">Dar de baja a paciente</button>
+        </div>
+        <app-spinner *ngIf="loading" />
       </div>
       <div class="columna-derecha">
         <h3>Historial del paciente </h3>
@@ -101,7 +121,16 @@
               <span>{{formatearFecha(bitacora.fecha_accion)}}</span> por el(la) enfermero(a)
               <span>{{bitacora.usuario}}</span>. {{bitacora.descripcion}}
             </p>
+            <p *ngIf="bitacora.accion === 'atendido-medico'">
+              El(la) paciente {{bitacora.alerta?.paciente.nombre_completo}} fue atendido por el(la) médico
+              <span>{{bitacora.usuario}}</span> el
+              <span>{{formatearFecha(bitacora.fecha_accion)}}</span>. <span>Situación recibida:</span>
+              {{bitacora.descripcion}}
+            </p>
+
           </li>
+          <!-- Botón de confirmación -->
+
         </ul>
       </div>
     </div>
