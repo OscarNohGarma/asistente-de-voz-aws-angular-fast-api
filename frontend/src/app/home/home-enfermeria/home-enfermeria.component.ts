@@ -22,6 +22,8 @@ import {
   formatearFechaAlerta,
   getLocalISOStringWithMicroseconds,
 } from '../../core/functions/functions';
+import { UsuarioService } from '../../core/services/usuario.service';
+import { Usuario } from '../../core/models/usuario';
 
 @Component({
   selector: 'app-home-enfermeria',
@@ -34,6 +36,7 @@ import {
 export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
   nombreUsuario: string = '';
   alertaItems: Alerta[] = [];
+  usuarioItems: Usuario[] = [];
   mensajes: string[] = [];
   private sub!: Subscription;
   userInteracted = false;
@@ -46,6 +49,7 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private alertaService: AlertaService,
     private alertSocketService: AlertSocketService,
+    private usuarioService: UsuarioService,
     private bitacoraService: BitacoraService,
     private ngZone: NgZone, // Inyectamos NgZone
     private fb: FormBuilder
@@ -64,6 +68,7 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
     this.nombreUsuario = nombre ?? 'Usuario';
 
     this.cargarAlertas(); // <-- Llamamos esta función al iniciar
+    this.cargarUsuarios();
     this.recibirAlertas();
   }
 
@@ -101,6 +106,18 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
           });
 
         console.log('Alertas actualizadas:', this.alertaItems);
+      },
+      error: (err) => {
+        console.error('Error al obtener las alertas', err);
+      },
+    });
+  }
+  cargarUsuarios(): void {
+    this.usuarioService.getAll().subscribe({
+      next: (data) => {
+        this.usuarioItems = data.filter((usuario) => usuario.rol === 'medico');
+
+        console.log('Alertas actualizadas:', this.usuarioItems);
       },
       error: (err) => {
         console.error('Error al obtener las alertas', err);
@@ -181,6 +198,23 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
               console.log('Bitácora enviada con éxito', response);
               if (this.requiereEscalamiento()) {
                 this.alertSocketService.sendMessage('escalamiento');
+
+                this.usuarioItems.forEach((usuario) => {
+                  const alertaEscalada = {
+                    ...alertaActualizada,
+                    correo_medico: usuario.correo, // Puedes obtenerlo dinámicamente si lo manejas en tu backend
+                    descripcion,
+                  };
+
+                  this.alertaService.escalarAlerta(alertaEscalada).subscribe({
+                    next: (resp) => {
+                      console.log('Correo enviado al médico:', resp);
+                    },
+                    error: (err) => {
+                      console.error('Error al enviar correo al médico:', err);
+                    },
+                  });
+                });
               }
             },
             error: (err) => {

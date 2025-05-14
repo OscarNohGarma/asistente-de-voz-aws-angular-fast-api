@@ -14,4 +14,7 @@ export class AlertaService extends GenericService<Alerta> {
   protected override getBaseUrl(): string {
     return `${environment.apiUrl}/alerta`;
   }
+  escalarAlerta(alerta: any) {
+    return this.http.post(`${environment.apiUrl}/escalar-alerta`, alerta); // Ajusta la URL según tu entorno
+  }
 }

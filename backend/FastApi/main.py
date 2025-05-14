@@ -20,6 +20,7 @@ from routers import audio_detection  # Asegúrate de importar tu router
 import os
 
 from routers import alert_websocket
+from routers import correo_router
 
 app = FastAPI()
 usuario_conn = UserConnection()
@@ -41,6 +42,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Montar rutas
 app.include_router(audio_detection.router)
+app.include_router(correo_router.router)
 
 
 @app.get("/favicon.ico")

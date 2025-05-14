@@ -17,6 +17,8 @@ contourpy==1.2.0
 cssselect==1.2.0
 cycler==0.12.1
 decorator==5.2.1
+dnspython==2.7.0
+email_validator==2.2.0
 fake-useragent==1.2.1
 fastapi==0.115.12
 filelock==3.18.0
