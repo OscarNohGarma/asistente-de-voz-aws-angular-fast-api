@@ -16,16 +16,19 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { BitacoraService } from '../../core/services/bitacora.service';
+import { Bitacora } from '../../core/models/bitacora';
+import {
+  formatearFechaAlerta,
+  getLocalISOStringWithMicroseconds,
+} from '../../core/functions/functions';
+import { UsuarioService } from '../../core/services/usuario.service';
+import { Usuario } from '../../core/models/usuario';
 
 @Component({
   selector: 'app-home-enfermeria',
   standalone: true,
-  imports: [
-    CommonModule,
-    AlertCardComponent,
-    HeaderComponent,
-    ReactiveFormsModule,
-  ],
+  imports: [CommonModule, AlertCardComponent, ReactiveFormsModule],
   providers: [AlertaService],
   templateUrl: './home-enfermeria.component.html',
   styleUrls: ['./home-enfermeria.component.scss'],
@@ -33,6 +36,7 @@ import {
 export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
   nombreUsuario: string = '';
   alertaItems: Alerta[] = [];
+  usuarioItems: Usuario[] = [];
   mensajes: string[] = [];
   private sub!: Subscription;
   userInteracted = false;
@@ -42,15 +46,17 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
   submitted = false;
 
   constructor(
-    private router: Router,
     private authService: AuthService,
     private alertaService: AlertaService,
     private alertSocketService: AlertSocketService,
+    private usuarioService: UsuarioService,
+    private bitacoraService: BitacoraService,
     private ngZone: NgZone, // Inyectamos NgZone
     private fb: FormBuilder
   ) {
     this.sendForm = this.fb.group({
       tipo: ['', [Validators.required]],
+      descripcion: ['', [Validators.required]],
     });
   }
 
@@ -62,46 +68,56 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
     this.nombreUsuario = nombre ?? 'Usuario';
 
     this.cargarAlertas(); // <-- Llamamos esta función al iniciar
-
-    console.log('Iniciando suscripción de alertas...');
-    this.sub = this.alertSocketService.getMessages().subscribe((msg) => {
-      console.log('Alerta recibida:', msg);
-      this.mensajes.push(msg);
-      // Reproducir sonido de alerta
-      this.reproducirSonido();
-      // Recargar las alertas
-      this.ngZone.run(() => {
-        this.cargarAlertas();
-      });
-
-      setTimeout(() => {
-        this.mensajes.shift();
-      }, 5000);
-    });
+    this.cargarUsuarios();
+    this.recibirAlertas();
   }
 
-  handleLogout() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
-  }
   ngOnDestroy(): void {
     this.sub.unsubscribe();
   }
 
+  recibirAlertas() {
+    this.sub = this.alertSocketService.getMessages().subscribe((msg) => {
+      console.log('Alerta recibida:', msg);
+      if (msg === 'ayuda') {
+        this.mensajes.push('¡Un paciente necesita ayuda!');
+        // Reproducir sonido de alerta
+        this.reproducirSonido();
+        // Recargar las alertas
+        this.ngZone.run(() => {
+          this.cargarAlertas();
+        });
+
+        setTimeout(() => {
+          this.mensajes.shift();
+        }, 5000);
+      }
+    });
+  }
   cargarAlertas(): void {
     this.alertaService.getAll().subscribe({
       next: (data) => {
         this.alertaItems = data
           .filter((alerta) => alerta.estado === 'pendiente')
           .sort((a, b) => {
-            const horaA = a.hora.split(':').map(Number);
-            const horaB = b.hora.split(':').map(Number);
-            return horaA[0] !== horaB[0]
-              ? horaA[0] - horaB[0]
-              : horaA[1] - horaB[1];
-          })
-          .reverse();
+            const fechaA = a.fecha ? new Date(a.fecha).getTime() : 0;
+            const fechaB = b.fecha ? new Date(b.fecha).getTime() : 0;
+            return fechaB - fechaA;
+          });
+
         console.log('Alertas actualizadas:', this.alertaItems);
+      },
+      error: (err) => {
+        console.error('Error al obtener las alertas', err);
+      },
+    });
+  }
+  cargarUsuarios(): void {
+    this.usuarioService.getAll().subscribe({
+      next: (data) => {
+        this.usuarioItems = data.filter((usuario) => usuario.rol === 'medico');
+
+        console.log('Alertas actualizadas:', this.usuarioItems);
       },
       error: (err) => {
         console.error('Error al obtener las alertas', err);
@@ -119,7 +135,7 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
   handleOpenOverlay(alerta: Alerta): void {
     this.alertaSeleccionada = alerta;
     this.overlayOpen = true;
-    console.log(alerta.id);
+    if (!this.alertaSeleccionada.nueva) return;
     const alertaActualizada = { ...alerta, nueva: false };
     this.alertaService
       .update(alerta.id.toString(), alertaActualizada)
@@ -139,21 +155,6 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
     this.alertaSeleccionada = undefined;
   }
 
-  confirmarAlerta(): void {
-    // this.alertaService.confirmar(this.alertaSeleccionada.id).subscribe(() => {
-    //   this.cargarAlertas();
-    //   this.cerrarOverlay();
-    // });
-  }
-
-  escalarAlerta(): void {
-    if (!this.alertaSeleccionada) return;
-    if (this.sendForm.invalid) {
-      this.sendForm.markAllAsTouched();
-      return;
-    }
-  }
-
   onSubmit() {
     this.submitted = true;
 
@@ -163,7 +164,7 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
     }
     if (!this.alertaSeleccionada) return;
 
-    const { tipo } = this.sendForm.value;
+    const { tipo, descripcion } = this.sendForm.value;
 
     // Obtener timestamp con 6 dígitos en los milisegundos (microsegundos simulados)
     let fechaConfirmacion = new Date().toISOString(); // Ej: "2025-04-30T23:15:56.611Z"
@@ -183,6 +184,43 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
           console.log('Alertas actualizada');
           this.cargarAlertas();
           this.cerrarOverlay();
+
+          const nuevaBitacora = new Bitacora(
+            0,
+            alertaActualizada.id,
+            this.requiereEscalamiento() ? 'escalado' : 'atendido-enfermero',
+            this.nombreUsuario,
+            descripcion,
+            getLocalISOStringWithMicroseconds()
+          );
+          this.bitacoraService.add(nuevaBitacora).subscribe({
+            next: (response) => {
+              console.log('Bitácora enviada con éxito', response);
+              if (this.requiereEscalamiento()) {
+                this.alertSocketService.sendMessage('escalamiento');
+
+                this.usuarioItems.forEach((usuario) => {
+                  const alertaEscalada = {
+                    ...alertaActualizada,
+                    correo_medico: usuario.correo, // Puedes obtenerlo dinámicamente si lo manejas en tu backend
+                    descripcion,
+                  };
+
+                  this.alertaService.escalarAlerta(alertaEscalada).subscribe({
+                    next: (resp) => {
+                      console.log('Correo enviado al médico:', resp);
+                    },
+                    error: (err) => {
+                      console.error('Error al enviar correo al médico:', err);
+                    },
+                  });
+                });
+              }
+            },
+            error: (err) => {
+              console.error('Error al enviar la bitácora', err);
+            },
+          });
         },
         error: (error) => {
           console.log('Error al actualizar');
@@ -197,18 +235,8 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
     const tipo = this.sendForm.value.tipo;
     return tipo === 'naranja' || tipo === 'rojo';
   }
-}
-function getLocalISOStringWithMicroseconds(): string {
-  const now = new Date();
-  const pad = (n: number, width = 2) => n.toString().padStart(width, '0');
 
-  const year = now.getFullYear();
-  const month = pad(now.getMonth() + 1);
-  const day = pad(now.getDate());
-  const hour = pad(now.getHours());
-  const minute = pad(now.getMinutes());
-  const second = pad(now.getSeconds());
-  const millis = now.getMilliseconds().toString().padStart(3, '0');
-
-  return `${year}-${month}-${day}T${hour}:${minute}:${second}.${millis}000`;
+  validarHora(fechaIso: string): string {
+    return formatearFechaAlerta(fechaIso);
+  }
 }

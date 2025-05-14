@@ -7,10 +7,16 @@ body {
 :root {
   --title-purple: #301f66;
   --primary-purple: #5b21b6;
+  --primary-purple-transparent: rgba(44, 0, 114, 0.2);
   --primary-purple-hover: #4c1d95;
 }
 p {
   margin: 0.5rem 0;
   font-size: 1rem;
   color: #444;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }

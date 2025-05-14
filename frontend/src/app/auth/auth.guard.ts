@@ -21,22 +21,24 @@ export class AuthGuard implements CanActivate {
     const token = this.authService.getToken();
     const rol = this.authService.getRol();
 
-    console.log(this.router.url);
-
-    if (this.router.url == '/audio-recorder') {
-      return false;
-    }
-
     if (!token || !rol) {
       this.router.navigate(['/login']);
       return false;
     }
 
+    // Manejo especial para rutas públicas como /audio-recorder
+    if (this.router.url === '/audio-recorder') {
+      return true;
+    }
+
     const allowedRoles = route.data['roles'] as string[];
+
     if (allowedRoles && !allowedRoles.includes(rol)) {
-      this.router.navigate(['/login']);
+      // redirige a acceso denegado en vez de login (opcional)
+      this.router.navigate(['/acceso-denegado']);
       return false;
     }
+
     return true;
   }
 }

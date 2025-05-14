@@ -1,35 +1,29 @@
 import { BaseModel } from '../../common/baseModel';
 
 export class Alerta extends BaseModel {
-  id_pacientes: string;
-  hora: string;
+  id_paciente: string;
   estado: string;
   tipo?: string;
-  confirmada_por?: string;
-  fecha_confirmacion?: string;
+  fecha?: string;
   paciente?: PacienteMini;
   nueva?: boolean;
   palabras_clave?: string[];
 
   constructor(
     id: number,
-    id_pacientes: string,
-    hora: string,
+    id_paciente: string,
     estado: string,
     tipo?: string,
-    confirmada_por?: string,
-    fecha_confirmacion?: string,
+    fecha?: string,
     paciente?: PacienteMini,
     nueva?: boolean,
     palabras_clave?: string[]
   ) {
     super(id);
-    this.id_pacientes = id_pacientes;
-    this.hora = hora;
+    this.id_paciente = id_paciente;
     this.estado = estado;
     this.tipo = tipo ?? '';
-    this.confirmada_por = confirmada_por ?? '';
-    this.fecha_confirmacion = fecha_confirmacion ?? '';
+    this.fecha = fecha ?? '';
     this.paciente = paciente;
     this.nueva = nueva ?? true; // por defecto nueva en true
     this.palabras_clave = palabras_clave ?? [];

@@ -6,7 +6,7 @@ dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
 load_dotenv(dotenv_path)
 
 
-class AlertaConnection:
+class BitacoraConnection:
     def __init__(self):
         self.conn = None
         try:
@@ -25,55 +25,36 @@ class AlertaConnection:
 
     def read_all(self):
         with self.conn.cursor() as cur:
-            cur.execute("SELECT * FROM alertas")
+            cur.execute("SELECT * FROM bitacora")
             return cur.fetchall()
 
     def read_one(self, id):
         with self.conn.cursor() as cur:
-            cur.execute("SELECT * FROM alertas WHERE id = %s", (id,))
+            cur.execute("SELECT * FROM bitacora WHERE id = %s", (id,))
             return cur.fetchone()
+
+    def read_by_alerta(self, id_alerta):
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT * FROM bitacora WHERE id_alerta = %s", (id_alerta,))
+            return cur.fetchall()
 
     def write(self, data):
         try:
             with self.conn.cursor() as cur:
                 cur.execute(
                     """
-                    INSERT INTO alertas (
-                        id_paciente, tipo, estado, fecha, nueva, palabras_clave
+                    INSERT INTO bitacora (
+                        id_alerta, accion, usuario, descripcion, fecha_accion
                     ) VALUES (
-                        %(id_paciente)s, %(tipo)s, %(estado)s,%(fecha)s, %(nueva)s, %(palabras_clave)s
-                    ) RETURNING id
-                    """,
-                    data,
-                )
-                new_id = cur.fetchone()[0]
-            self.conn.commit()
-            return new_id
-        except Exception as e:
-            self.conn.rollback()
-            print("Error al insertar en la base de datos:", e)
-            raise e
-
-    def update(self, id, data):
-        try:
-            with self.conn.cursor() as cur:
-                cur.execute(
-                    """
-                    UPDATE alertas
-                    SET id_paciente = %(id_paciente)s,
-                        tipo = %(tipo)s,
-                        estado = %(estado)s,
-                        fecha = %(fecha)s,
-                        nueva = %(nueva)s,
-                        palabras_clave = %(palabras_clave)s
-                    WHERE id = %(id)s
+                        %(id_alerta)s, %(accion)s, %(usuario)s, %(descripcion)s, %(fecha_accion)s
+                    )
                     """,
                     data,
                 )
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()
-            print("Error al actualizar en la base de datos:", e)
+            print("Error al insertar en la bitácora:", e)
             raise e
 
     def delete(self, id):
@@ -81,7 +62,7 @@ class AlertaConnection:
             with self.conn.cursor() as cur:
                 cur.execute(
                     """ 
-                    DELETE FROM alertas WHERE id = %s
+                    DELETE FROM bitacora WHERE id = %s
                     """,
                     (id,),
                 )
@@ -96,14 +77,14 @@ class AlertaConnection:
             with self.conn.cursor() as cur:
                 cur.execute(
                     """ 
-                    DELETE FROM alertas;
-                    ALTER SEQUENCE alertas_id_seq RESTART WITH 1;
+                    DELETE FROM bitacora;
+                    ALTER SEQUENCE bitacora_id_seq RESTART WITH 1;
                     """
                 )
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()
-            print("Error al eliminar todas las alertas en la base de datos:", e)
+            print("Error al eliminar todas las entradas de bitácora:", e)
             raise e
 
     def __del__(self):

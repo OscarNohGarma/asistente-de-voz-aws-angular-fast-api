@@ -1,10 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { AlertSocketService } from '../core/services/alert-socket.service';
 import { AlertaService } from '../core/services/alerta.service';
 import { Alerta } from '../core/models/alertas';
 import { AudioRecorderComponent } from '../common/audio-recorder/audio-recorder.component';
+import { getLocalISOStringWithMicroseconds } from '../core/functions/functions';
+import { BitacoraService } from '../core/services/bitacora.service';
+import { Bitacora } from '../core/models/bitacora';
 
 @Component({
   selector: 'app-admin',
@@ -14,41 +17,30 @@ import { AudioRecorderComponent } from '../common/audio-recorder/audio-recorder.
   styleUrl: './admin.component.scss',
 })
 export class AdminComponent {
+  listaBitacora: Bitacora[] = [];
   constructor(
     private router: Router,
     private authService: AuthService,
     private alertSocketService: AlertSocketService,
-    private alertaService: AlertaService
+    private alertaService: AlertaService,
+    private bitacoraService: BitacoraService
   ) {}
 
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+  numeroAleatorio(): number {
+    return Math.floor(Math.random() * 3) + 1;
+  }
   enviar() {
-    const numeroAleatorio = Math.floor(Math.random() * 3) + 1;
-
-    // Función para generar una hora aleatoria
-    function generarHoraAleatoria(): string {
-      const hora = Math.floor(Math.random() * 24); // de 0 a 23
-      const minuto = Math.floor(Math.random() * 60); // de 0 a 59
-
-      // Formatear con ceros a la izquierda si es necesario
-      const horaFormateada = hora.toString().padStart(2, '0');
-      const minutoFormateado = minuto.toString().padStart(2, '0');
-
-      return `${horaFormateada}:${minutoFormateado}`;
-    }
-
     // Aquí creamos una nueva alerta
     const nuevaAlerta = new Alerta(
       0, // ID de la alerta
-      numeroAleatorio.toString(), // id_pacientes como string
-      generarHoraAleatoria(), // Hora aleatoria
+      this.numeroAleatorio().toString(), // id_pacientes como string
       'pendiente', // Estado
       '', // Tipo
-      '', // Confirmada por
-      new Date().toISOString(), // Fecha de confirmación actual
+      getLocalISOStringWithMicroseconds(), // Fecha de confirmación actual
       undefined,
       true,
       ['emergencia', '911']
@@ -58,8 +50,24 @@ export class AdminComponent {
     this.alertaService.add(nuevaAlerta).subscribe({
       next: (response) => {
         console.log('Alerta enviada con éxito', response);
-        console.log('Enviando alerta desde admin...');
-        this.alertSocketService.sendMessage('¡Un paciente necesita ayuda!');
+        this.alertSocketService.sendMessage('ayuda');
+
+        const nuevaBitacora = new Bitacora(
+          0,
+          response.alerta.id,
+          'solicitud',
+          '',
+          '',
+          getLocalISOStringWithMicroseconds()
+        );
+        this.bitacoraService.add(nuevaBitacora).subscribe({
+          next: (response) => {
+            console.log('Bitácora enviada con éxito', response);
+          },
+          error: (err) => {
+            console.error('Error al enviar la bitácora', err);
+          },
+        });
       },
       error: (err) => {
         console.error('Error al enviar la alerta', err);

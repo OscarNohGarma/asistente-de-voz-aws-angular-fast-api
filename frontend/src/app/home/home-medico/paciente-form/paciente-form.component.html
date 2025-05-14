@@ -1,0 +1,91 @@
+<h3 class="title">Dar de alta a nuevo paciente</h3>
+
+<form [formGroup]="sendForm" (ngSubmit)="onSubmit()" class="form-paciente container">
+    <!-- Nombre completo -->
+    <label for="nombre_completo">Nombre completo</label>
+    <input type="text" id="nombre_completo" formControlName="nombre_completo" placeholder="Juan Ramón Pérez..."
+        [ngClass]="{ 'err': submitted && f['nombre_completo'].errors }" />
+    <div *ngIf="submitted && f['nombre_completo'].errors" class="error">
+        <small *ngIf="f['nombre_completo'].errors?.['required']">El nombre es obligatorio.</small>
+    </div>
+
+    <div class="doble-columna">
+        <!-- Edad -->
+        <div class="div-doble-columna">
+            <label for="edad">Edad</label>
+            <input type="number" id="edad" formControlName="edad" placeholder="Edad"
+                [ngClass]="{ 'err': submitted && f['edad'].errors }" />
+            <div *ngIf="submitted && f['edad'].errors" class="error">
+                <small *ngIf="f['edad'].errors?.['required']">La edad es obligatoria.</small>
+                <small *ngIf="f['edad'].errors?.['min']">Debe ser mayor a 0.</small>
+            </div>
+        </div>
+
+        <!-- Habitación -->
+        <div class="div-doble-columna">
+            <label for="habitacion">Habitación</label>
+            <input type="text" id="habitacion" formControlName="habitacion" placeholder="230A..."
+                [ngClass]="{ 'err': submitted && f['habitacion'].errors }" />
+            <div *ngIf="submitted && f['habitacion'].errors" class="error">
+                <small *ngIf="f['habitacion'].errors?.['required']">La habitación es obligatoria.</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diagnóstico -->
+    <label for="diagnostico">Diagnóstico</label>
+    <input type="text" id="diagnostico" formControlName="diagnostico"
+        placeholder="Demencia leve, Parkinson moderado, etc..."
+        [ngClass]="{ 'err': submitted && f['diagnostico'].errors }" />
+    <div *ngIf="submitted && f['diagnostico'].errors" class="error">
+        <small *ngIf="f['diagnostico'].errors?.['required']">El diagnóstico es obligatorio.</small>
+    </div>
+
+    <!-- Fecha de ingreso -->
+    <label for="fecha_ingreso">Fecha de ingreso</label>
+    <input type="datetime-local" id="fecha_ingreso" formControlName="fecha_ingreso" placeholder="Fecha de Ingreso"
+        [ngClass]="{ 'err': submitted && f['fecha_ingreso'].errors }" />
+    <div *ngIf="submitted && f['fecha_ingreso'].errors" class="error">
+        <small *ngIf="f['fecha_ingreso'].errors?.['required']">La fecha de ingreso es obligatoria.</small>
+    </div>
+
+    <!-- Foto del paciente -->
+    <label for="fotoPaciente">Foto del paciente</label>
+    <!-- <img *ngIf="fotoUrl" [src]="fotoUrl" alt="Foto del paciente" style="width: 200px; border-radius: 8px;" /> -->
+    <img *ngIf="previewUrl" [src]="previewUrl" alt="Vista previa de la foto" />
+
+    <div class="file-upload-wrapper">
+        <span class="file-upload-name">{{ selectedFile?.name ||( editting ? "Selecciona una foto nueva si se requiere"
+            :'Ningún archivo seleccionado' )}}</span>
+        <label class="file-upload-label" for="fotoPaciente">Seleccionar archivo</label>
+        <input type="file" id="fotoPaciente" (change)="onFileSelect($event)" required hidden />
+        <div *ngIf="submitted && !selectedFile && !editting" class="error">
+            <small>La foto del paciente es obligatoria.</small>
+        </div>
+    </div>
+
+    <div class="doble-columna">
+        <!-- Teléfono familiar -->
+        <div class="div-doble-columna">
+            <label for="telefono_familiar">Teléfono de familiar</label>
+            <input type="text" id="telefono_familiar" formControlName="telefono_familiar" placeholder="9996662211"
+                [ngClass]="{ 'err': submitted && f['telefono_familiar'].errors }" />
+            <div *ngIf="submitted && f['telefono_familiar'].errors" class="error">
+                <small *ngIf="f['telefono_familiar'].errors?.['required']">El teléfono es obligatorio.</small>
+            </div>
+        </div>
+
+        <!-- Correo familiar -->
+        <div class="div-doble-columna">
+            <label for="correo_familiar">Correo de familiar</label>
+            <input type="email" id="correo_familiar" formControlName="correo_familiar" placeholder="ejemplo@gmail.com"
+                [ngClass]="{ 'err': submitted && f['correo_familiar'].errors }" />
+            <div *ngIf="submitted && f['correo_familiar'].errors" class="error">
+                <small *ngIf="f['correo_familiar'].errors?.['required']">El correo es obligatorio.</small>
+                <small *ngIf="f['correo_familiar'].errors?.['email']">Debe ser un correo válido.</small>
+            </div>
+        </div>
+    </div>
+    <app-spinner *ngIf="loading" />
+    <button type="submit">{{editting ? "Guardar cambios" : "Dar de alta"}}</button>
+</form>

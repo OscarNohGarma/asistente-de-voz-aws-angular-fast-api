@@ -1,0 +1,8 @@
+CREATE TABLE bitacora (
+    id SERIAL PRIMARY KEY,
+    id_alerta INTEGER NOT NULL REFERENCES alertas(id) ON DELETE CASCADE,
+    accion VARCHAR(50) NOT NULL,
+    usuario VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    fecha_accion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

@@ -12,6 +12,11 @@ export class RedirectComponent implements OnInit {
   ngOnInit(): void {
     const rol = this.authService.getRol();
 
+    if (!rol) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
     switch (rol) {
       case 'admin':
         this.router.navigate(['/admin']);
