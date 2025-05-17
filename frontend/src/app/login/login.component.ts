@@ -83,7 +83,7 @@ export class LoginComponent implements OnInit {
       if (foundUser.length != 0 && foundUser[0].contrasena == password) {
         const userRol = foundUser[0].rol;
         this.authService.login(
-          '123123123',
+          foundUser[0].id.toString(),
           foundUser[0].nombre_completo,
           'mock-jwt-token',
           userRol

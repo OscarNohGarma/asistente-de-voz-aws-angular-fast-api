@@ -8,16 +8,18 @@ import { AudioRecorderComponent } from '../common/audio-recorder/audio-recorder.
 import { getLocalISOStringWithMicroseconds } from '../core/functions/functions';
 import { BitacoraService } from '../core/services/bitacora.service';
 import { Bitacora } from '../core/models/bitacora';
+import { HeaderComponent } from '../common/header/header.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [RouterOutlet, AudioRecorderComponent],
+  imports: [RouterOutlet, HeaderComponent],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.scss',
 })
-export class AdminComponent {
-  listaBitacora: Bitacora[] = [];
+export class AdminComponent implements OnInit {
+  nombreUsuario: string = '';
   constructor(
     private router: Router,
     private authService: AuthService,
@@ -25,19 +27,20 @@ export class AdminComponent {
     private alertaService: AlertaService,
     private bitacoraService: BitacoraService
   ) {}
-
-  logout(): void {
+  ngOnInit(): void {
+    const nombre = this.authService.getNombre();
+    this.nombreUsuario = nombre ?? 'Usuario';
+  }
+  handleLogout() {
     this.authService.logout();
     this.router.navigate(['/login']);
-  }
-  numeroAleatorio(): number {
-    return Math.floor(Math.random() * 3) + 1;
   }
   enviar() {
     // Aquí creamos una nueva alerta
     const nuevaAlerta = new Alerta(
       0, // ID de la alerta
-      this.numeroAleatorio().toString(), // id_pacientes como string
+
+      (Math.floor(Math.random() * 3) + 1).toString(), // id_pacientes como string
       'pendiente', // Estado
       '', // Tipo
       getLocalISOStringWithMicroseconds(), // Fecha de confirmación actual
