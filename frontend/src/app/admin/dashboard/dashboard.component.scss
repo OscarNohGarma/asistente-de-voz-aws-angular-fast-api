@@ -1,0 +1,131 @@
+.admin-container {
+  padding: 20px;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 50px;
+
+  button {
+    padding: 10px 20px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+
+    &.active {
+      background: #2e2e7f;
+      color: white;
+    }
+
+    &:not(.active):hover {
+      background-color: #e1e1e1;
+    }
+  }
+}
+
+.div-encabezado {
+  display: flex;
+  justify-content: space-between;
+}
+.titulo-seccion {
+  color: var(--title-purple);
+  margin-bottom: 1rem;
+}
+
+.tarjetas-resumen {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin-bottom: 2rem;
+
+  .tarjeta {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    text-align: center;
+
+    h3 {
+      color: var(--primary-purple);
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 24px;
+      font-weight: 700;
+    }
+  }
+}
+
+.gestion-usuarios .lista-usuarios,
+.pacientes .lista-pacientes {
+  margin-top: 1rem;
+
+  li {
+    padding: 1rem 3rem;
+    background-color: #fff;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+}
+
+.gestion-usuarios .lista-usuarios li {
+  flex-direction: row;
+}
+
+.boton-agregar {
+  background-color: var(--primary-purple);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 1rem;
+
+  &:hover {
+    background-color: var(--primary-purple-hover);
+  }
+}
+
+.buttons-div {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  button {
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    &.edit {
+      background-color: var(--primary-purple);
+
+      &:hover {
+        background-color: var(--primary-purple-hover);
+      }
+    }
+    &.delete {
+      background-color: #dc2626;
+
+      &:hover {
+        background-color: #b91c1c;
+      }
+    }
+  }
+}
+span {
+  font-weight: 700;
+}

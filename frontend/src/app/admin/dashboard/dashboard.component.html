@@ -1,0 +1,69 @@
+<div class="admin-container container">
+    <div class="admin-tabs">
+        <button [class.active]="vista === 'dashboard'" (click)="selectVista ('dashboard')">Panel general</button>
+        <button [class.active]="vista === 'usuarios'" (click)="selectVista ('usuarios')">Gestión de usuarios</button>
+        <button [class.active]="vista === 'pacientes'" (click)="selectVista ('pacientes')">Lista de pacientes</button>
+        <button [class.active]="vista === 'voz'" (click)="selectVista ('voz')">Agregar voz de paciente</button>
+    </div>
+
+    <div *ngIf="vista === 'dashboard'" class="dashboard">
+        <h2 class="titulo-seccion">Resumen del sistema</h2>
+
+        <div class="tarjetas-resumen">
+            <div class="tarjeta">
+                <h3>Total de pacientes</h3>
+                <p>{{listaPacientes.length}}</p>
+            </div>
+            <div class="tarjeta">
+                <h3>Alertas activas</h3>
+                <p>{{filtarAlertasActivas().length}}</p>
+            </div>
+            <div class="tarjeta">
+                <h3>Personal activo</h3>
+                <p>{{listaUsuarios.length}}</p>
+            </div>
+        </div>
+
+        <div class="graficos">
+            <p>Estadísticas por tipo de alerta o actividad semanal (en construcción).</p>
+        </div>
+    </div>
+
+    <div *ngIf="vista === 'usuarios'" class="gestion-usuarios">
+        <div class="div-encabezado">
+            <h2 class="titulo-seccion">Usuarios del sistema</h2>
+            <button class="boton-agregar" (click)="handleAddUsuario()">+ Nuevo usuario</button>
+        </div>
+
+        <ul class="lista-usuarios">
+            <li *ngFor="let usuario of listaUsuarios">
+                <p>
+
+                    <span>{{ usuario.nombre_completo }}</span> - Rol: <span>{{ usuario.rol }}</span> - Correo: <span>{{
+                        usuario.correo }}</span>
+                <div class="buttons-div">
+                    <button class="edit" (click)="editarUsuario(usuario)">Editar</button>
+                    <button class="delete" (click)="handleDeleteUsuario(usuario)">Dar de baja</button>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div *ngIf="vista === 'pacientes'" class="pacientes">
+        <div class="div-encabezado">
+            <h2 class="titulo-seccion">Pacientes dados de alta</h2>
+        </div>
+
+        <ul class="lista-pacientes">
+            <li *ngFor="let paciente of listaPacientes">
+                <p> <span>{{ paciente.nombre_completo }}</span> - Edad: <span>{{ paciente.edad }}</span> - Habitación:
+                    <span>{{
+                        paciente.habitacion }}</span>
+                <p> Correo de familiar: <span>{{
+                        paciente.correo_familiar }}</span></p>
+                <p>Número de familiar: <span>{{
+                        paciente.telefono_familiar }}</span></p>
+            </li>
+        </ul>
+    </div>
+</div>

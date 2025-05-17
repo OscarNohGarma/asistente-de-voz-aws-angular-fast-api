@@ -1,4 +1,4 @@
-<h3 class="title">Dar de alta a nuevo paciente</h3>
+<h3 class="title">{{editting ?"Editar información del paciente" : "Dar de alta a nuevo paciente"}}</h3>
 
 <form [formGroup]="sendForm" (ngSubmit)="onSubmit()" class="form-paciente container">
     <!-- Nombre completo -->

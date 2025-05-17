@@ -1,5 +1,3 @@
-<p>admin works!</p>
+<app-header [nombreUsuario]="nombreUsuario" (cerrarSesion)="handleLogout()"></app-header>
+<!-- <button (click)="enviar()">ENVIAR ALERTA</button> -->
 <router-outlet />
-<button (click)="logout()">Logout</button>
-<button (click)="enviar()">Enviar alerta</button>
-<app-audio-recorder />

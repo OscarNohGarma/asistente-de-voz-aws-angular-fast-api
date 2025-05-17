@@ -115,7 +115,9 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
   cargarUsuarios(): void {
     this.usuarioService.getAll().subscribe({
       next: (data) => {
-        this.usuarioItems = data.filter((usuario) => usuario.rol === 'medico');
+        this.usuarioItems = data.filter(
+          (usuario) => usuario.rol === 'medico' && usuario.activo
+        );
 
         console.log('Alertas actualizadas:', this.usuarioItems);
       },

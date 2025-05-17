@@ -1,0 +1,48 @@
+<h3 class="title"> {{editting ?"Editar información del usuario" : "Dar de alta a nuevo usuario"}}</h3>
+
+<form [formGroup]="sendForm" (ngSubmit)="onSubmit()" class="form-usuario container">
+    <!-- Nombre completo -->
+    <label for="nombre_completo">Nombre completo</label>
+    <input type="text" id="nombre_completo" formControlName="nombre_completo" placeholder="Juan Ramón Pérez..."
+        [ngClass]="{ 'err': submitted && f['nombre_completo'].errors }" />
+    <div *ngIf="submitted && f['nombre_completo'].errors" class="error">
+        <small *ngIf="f['nombre_completo'].errors?.['required']">El nombre es obligatorio.</small>
+    </div>
+
+    <label for="contrasena">Contraseña</label>
+    <input type="password" id="contrasena" formControlName="contrasena" placeholder="**********"
+        [ngClass]="{ 'err': submitted && f['contrasena'].errors }" />
+    <div *ngIf="submitted && f['contrasena'].errors" class="error">
+        <small *ngIf="f['contrasena'].errors?.['required']">La contraseña es obligatoria.</small>
+    </div>
+    <label for="contrasena">Confirmar contraseña</label>
+    <input type="password" id="confirmar_contrasena" formControlName="confirmar_contrasena" placeholder="**********"
+        [ngClass]="{ 'err': submitted && f['confirmar_contrasena'].errors }" />
+    <div *ngIf="submitted && f['confirmar_contrasena'].errors" class="error">
+        <small *ngIf="f['confirmar_contrasena'].errors?.['required']">La contraseña es obligatoria.</small>
+        <small *ngIf="f['confirmar_contrasena'].errors?.['mismatch']">Las contraseñas no coinciden.</small>
+    </div>
+
+    <label for="rol">Rol del usuario</label>
+
+    <select name="rol" id="rol" formControlName="rol" [ngClass]="{ 'err': submitted && f['rol'].errors }">
+        <option value="">--Seleccionar--</option>
+        <option value="admin">Administrador</option>
+        <option value="medico">Médico</option>
+        <option value="enfermero">Enfermero</option>
+    </select>
+    <div *ngIf="submitted && f['rol'].errors" class="error">
+        <small *ngIf="f['rol'].errors?.['required']">El rol es obligatorio.</small>
+    </div>
+
+    <label for="correo">Correo electrónico</label>
+    <input type="email" id="correo" formControlName="correo" placeholder="ejemplo@gmail.com"
+        [ngClass]="{ 'err': submitted && f['correo'].errors }" />
+    <div *ngIf="submitted && f['correo'].errors" class="error">
+        <small *ngIf="f['correo'].errors?.['required']">El correo es obligatorio.</small>
+        <small *ngIf="f['correo'].errors?.['email']">Debe ser un correo válido.</small>
+    </div>
+    <app-spinner *ngIf="loading" />
+    <button type="submit">{{editting ? "Guardar cambios" : "Dar de alta"}}</button>
+    <p *ngIf="error" class="errorCorreo">{{error}}</p>
+</form>
