@@ -66,4 +66,11 @@
             </li>
         </ul>
     </div>
+
+    <div *ngIf="vista === 'voz'">
+        <div class="div-encabezado">
+            <h2 class="titulo-seccion">Agregar voz de paciente</h2>
+        </div>
+        <app-agregar-voz />
+    </div>
 </div>

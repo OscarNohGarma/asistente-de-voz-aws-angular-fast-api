@@ -70,18 +70,32 @@ export class PacienteFormComponent implements OnInit {
     return this.sendForm.controls;
   }
 
+  errorFile: string = '';
   // Maneja la selección del archivo y muestra la vista previa
   onFileSelect(event: any) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
+      const file = input.files[0];
+      const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+      const extension = file.name.split('.').pop()?.toLowerCase();
 
-      // Crear una vista previa de la imagen seleccionada
+      if (!extension || !allowedExtensions.includes(extension)) {
+        this.errorFile =
+          'Error: Solo se aceptan archivos de imagen (jpg, jpeg, png, gif, webp)';
+        this.selectedFile = null;
+        this.previewUrl = '';
+        return;
+      }
+
+      // Si es válido, limpia el error y carga la imagen
+      this.errorFile = '';
+      this.selectedFile = file;
+
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        this.previewUrl = e.target.result; // Aquí se obtiene la URL de la imagen seleccionada
+        this.previewUrl = e.target.result;
       };
-      reader.readAsDataURL(this.selectedFile);
+      reader.readAsDataURL(file);
     }
   }
 

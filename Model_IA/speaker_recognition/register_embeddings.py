@@ -13,9 +13,6 @@ load_dotenv(dotenv_path)
 
 # Inicializa el encoder
 encoder = VoiceEncoder()
-print("DB_NAME:", os.getenv("DB_NAME"))
-print("DB_USER:", os.getenv("DB_USER"))
-print("DB_PASSWORD:", os.getenv("DB_PASSWORD"))
 # Conecta a tu base de datos PostgreSQL
 conn = psycopg2.connect(
     dbname=os.getenv("DB_NAME"),
@@ -58,9 +55,9 @@ for filename in os.listdir(audio_folder):
             """,
                 (embedding_str, id_paciente),
             )
-            print(f"✅ Embedding actualizado para {nombre_archivo}")
+            print("OK- Embedding actualizado para {}".format(nombre_archivo))
         else:
-            print(f"⚠️ Paciente '{nombre_archivo}' no encontrado en la BD.")
+            print(f"err- Paciente '{nombre_archivo}' no encontrado en la BD.")
 
 # Guardar cambios y cerrar conexión
 conn.commit()

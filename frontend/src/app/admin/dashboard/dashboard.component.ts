@@ -8,11 +8,12 @@ import { PacienteService } from '../../core/services/paciente.service';
 import { Paciente } from '../../core/models/paciente';
 import { Alerta } from '../../core/models/alertas';
 import { AlertaService } from '../../core/services/alerta.service';
+import { AgregarVozComponent } from './agregar-voz/agregar-voz.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AgregarVozComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
