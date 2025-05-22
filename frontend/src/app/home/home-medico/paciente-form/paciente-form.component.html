@@ -62,6 +62,8 @@
         <div *ngIf="submitted && !selectedFile && !editting" class="error">
             <small>La foto del paciente es obligatoria.</small>
         </div>
+        <div *ngIf="errorFile" class="error-text">{{ errorFile }}</div>
+
     </div>
 
     <div class="doble-columna">

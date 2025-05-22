@@ -1,0 +1,124 @@
+/* Usa la clase base del formulario */
+.form-usuario {
+  margin: 0 auto;
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  max-width: 800px;
+  gap: 10px;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* Etiquetas */
+.form-usuario label {
+  font-weight: 600;
+  margin-top: 0.5rem;
+  color: #444; /* para darle un color neutral */
+}
+
+/* Inputs y select para tener bordes redondeados y padding */
+.form-usuario input,
+.form-usuario select {
+  border: 1px solid #444;
+  padding: 0.5rem;
+  border-radius: 8px;
+  color: #444;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+/* Cambia el borde al enfocar */
+.form-usuario input:focus,
+.form-usuario select:focus {
+  border-color: var(--primary-purple);
+}
+
+/* Botón con estilo púrpura */
+.form-usuario button {
+  margin-top: 1rem;
+  background-color: var(--primary-purple);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+/* Hover para el botón */
+.form-usuario button:hover {
+  background-color: var(--primary-purple-hover);
+}
+
+.form-usuario input[type="file"] {
+  border: 1px solid #444;
+  padding: 0.5rem;
+  border-radius: 8px;
+  color: #444;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  background-color: #fff;
+  transition: border-color 0.2s ease;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.form-usuario input[type="file"]:hover {
+  border-color: var(--primary-purple);
+}
+
+/* Oculta el input file real */
+.input-file-hidden {
+  display: none;
+}
+
+/* Botón personalizado para seleccionar archivo */
+.btn-select-file {
+  background-color: var(--primary-purple);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+  max-width: 200px;
+  margin-top: 0.25rem;
+}
+
+.btn-select-file:hover {
+  background-color: var(--primary-purple-hover);
+}
+
+/* Mostrar nombre de archivo */
+.file-name {
+  font-style: italic;
+  color: #666;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.btn-div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-self: center;
+  gap: 10px;
+}
+
+.input-error {
+  border: 2px solid #ff0000 !important;
+  outline: none;
+}
+
+.error-text {
+  color: #ff0000;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}

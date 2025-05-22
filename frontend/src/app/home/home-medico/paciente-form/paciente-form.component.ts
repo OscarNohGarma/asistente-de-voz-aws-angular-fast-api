@@ -11,6 +11,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SpinnerComponent } from '../../../common/spinner/spinner.component';
+import { SweetAlertService } from '../../../core/services/sweet-alert.service';
 
 @Component({
   selector: 'app-paciente-form',
@@ -41,7 +42,8 @@ export class PacienteFormComponent implements OnInit {
     private http: HttpClient,
     private pacienteService: PacienteService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private swal: SweetAlertService
   ) {
     this.sendForm = this.fb.group({
       nombre_completo: ['', [Validators.required]],
@@ -70,18 +72,32 @@ export class PacienteFormComponent implements OnInit {
     return this.sendForm.controls;
   }
 
+  errorFile: string = '';
   // Maneja la selección del archivo y muestra la vista previa
   onFileSelect(event: any) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
+      const file = input.files[0];
+      const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+      const extension = file.name.split('.').pop()?.toLowerCase();
 
-      // Crear una vista previa de la imagen seleccionada
+      if (!extension || !allowedExtensions.includes(extension)) {
+        this.errorFile =
+          'Error: Solo se aceptan archivos de imagen (jpg, jpeg, png, gif, webp)';
+        this.selectedFile = null;
+        this.previewUrl = '';
+        return;
+      }
+
+      // Si es válido, limpia el error y carga la imagen
+      this.errorFile = '';
+      this.selectedFile = file;
+
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        this.previewUrl = e.target.result; // Aquí se obtiene la URL de la imagen seleccionada
+        this.previewUrl = e.target.result;
       };
-      reader.readAsDataURL(this.selectedFile);
+      reader.readAsDataURL(file);
     }
   }
 
@@ -90,8 +106,7 @@ export class PacienteFormComponent implements OnInit {
     this.submitted = true;
     if (this.sendForm.invalid) {
       this.sendForm.markAllAsTouched();
-      console.log('aborting');
-
+      this.swal.error('Por favor, rellena todos los campos correctamente.');
       return;
     }
     this.loading = true;
@@ -105,7 +120,11 @@ export class PacienteFormComponent implements OnInit {
     if (this.selectedFile) {
       formData.append('file', this.selectedFile, this.selectedFile.name);
     } else {
-      if (!this.editting) return;
+      if (!this.editting) {
+        this.loading = false;
+        this.swal.error('La foto de paciente es obligatoria.');
+        return;
+      }
     }
     if (this.editting) {
       this.http
@@ -115,10 +134,15 @@ export class PacienteFormComponent implements OnInit {
             setTimeout(() => {
               console.log('Paciente actualizado:', response);
               this.loading = false;
-              this.router.navigate(['home/medico']);
+              this.swal
+                .success('Paciente actualizado correctamente.')
+                .then((result) => {
+                  this.router.navigate(['home/medico']);
+                });
             }, 1000);
           },
           (error) => {
+            this.swal.error('Error al actualizar paciente.');
             console.error('Error al actualizar paciente:', error);
             this.loading = false;
           }
@@ -127,12 +151,16 @@ export class PacienteFormComponent implements OnInit {
       this.http.post(`${environment.apiUrl}/paciente`, formData).subscribe(
         (response) => {
           setTimeout(() => {
-            console.log('Paciente insertado:', response);
             this.loading = false;
-            this.router.navigate(['home/medico']);
+            this.swal
+              .success('Paciente dado de alta correctamente.')
+              .then((result) => {
+                this.router.navigate(['home/medico']);
+              });
           }, 1000);
         },
         (error) => {
+          this.swal.error('Error al dar de alta al paciente.');
           console.error('Error al insertar paciente:', error);
           this.loading = false;
         }

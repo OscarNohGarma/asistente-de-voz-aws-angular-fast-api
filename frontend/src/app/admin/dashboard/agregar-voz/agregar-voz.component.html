@@ -1,0 +1,29 @@
+<div class="form-usuario">
+    <!-- PACIENTE -->
+    <label for="pacienteId">Paciente:</label>
+    <select id="pacienteId" [(ngModel)]="pacienteId" class="input"
+        [ngClass]="{ 'input-error': submitted && !pacienteId }">
+        <option value="" disabled selected>Selecciona un paciente</option>
+        <option *ngFor="let paciente of listaPacientes" [value]="paciente.id">
+            {{ paciente.nombre_completo }}
+        </option>
+    </select>
+    <div *ngIf="submitted && !pacienteId" class="error-text">
+        Selecciona un paciente.
+    </div>
+
+    <!-- ARCHIVO DE AUDIO -->
+    <label for="audioFile">Selecciona el audio de voz del paciente (.wav):</label>
+    <input id="audioFile" type="file" (change)="onFileSelected($event)" accept=".wav" class="input-file-hidden"
+        hidden />
+    <div class="btn-div">
+        <button type="button" class="btn-select-file" (click)="triggerFileSelect()">
+            Seleccionar archivo
+        </button>
+        <span class="file-name">{{ selectedFileName || 'Ningún archivo seleccionado.' }}</span>
+    </div>
+    <div *ngIf="errorFile" class="error-text">{{ errorFile }}</div>
+
+    <button (click)="onSubmit()">Subir audio</button>
+    <app-spinner *ngIf="loading" />
+</div>

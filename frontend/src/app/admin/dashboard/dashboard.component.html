@@ -25,7 +25,7 @@
         </div>
 
         <div class="graficos">
-            <p>Estadísticas por tipo de alerta o actividad semanal (en construcción).</p>
+            <p>Estadísticas de alertas vigentes, personal activo y pacientes dados de alta.</p>
         </div>
     </div>
 
@@ -65,5 +65,12 @@
                         paciente.telefono_familiar }}</span></p>
             </li>
         </ul>
+    </div>
+
+    <div *ngIf="vista === 'voz'">
+        <div class="div-encabezado">
+            <h2 class="titulo-seccion">Agregar voz de paciente</h2>
+        </div>
+        <app-agregar-voz />
     </div>
 </div>

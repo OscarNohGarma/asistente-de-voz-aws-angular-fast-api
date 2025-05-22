@@ -24,6 +24,7 @@ import {
 } from '../../core/functions/functions';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { Usuario } from '../../core/models/usuario';
+import { SweetAlertService } from '../../core/services/sweet-alert.service';
 
 @Component({
   selector: 'app-home-enfermeria',
@@ -52,7 +53,8 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
     private usuarioService: UsuarioService,
     private bitacoraService: BitacoraService,
     private ngZone: NgZone, // Inyectamos NgZone
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private swal: SweetAlertService
   ) {
     this.sendForm = this.fb.group({
       tipo: ['', [Validators.required]],
@@ -104,11 +106,10 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
             const fechaB = b.fecha ? new Date(b.fecha).getTime() : 0;
             return fechaB - fechaA;
           });
-
-        console.log('Alertas actualizadas:', this.alertaItems);
       },
       error: (err) => {
         console.error('Error al obtener las alertas', err);
+        this.swal.error('Error al obtener las alertas');
       },
     });
   }
@@ -118,11 +119,10 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
         this.usuarioItems = data.filter(
           (usuario) => usuario.rol === 'medico' && usuario.activo
         );
-
-        console.log('Alertas actualizadas:', this.usuarioItems);
       },
       error: (err) => {
-        console.error('Error al obtener las alertas', err);
+        console.error('Error al obtener los usuarios', err);
+        this.swal.error('Error al obtener los usuarios');
       },
     });
   }
@@ -148,6 +148,7 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.log('Error al actualizar');
+          this.swal.error('Error al actualizar la alerta');
         },
       });
   }
@@ -162,6 +163,7 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
 
     if (this.sendForm.invalid) {
       this.sendForm.markAllAsTouched();
+      this.swal.error('Por favor, rellena los campos correctamente.');
       return;
     }
     if (!this.alertaSeleccionada) return;
@@ -179,54 +181,84 @@ export class HomeEnfermeriaComponent implements OnInit, OnDestroy {
       confirmada_por: this.authService.getNombre()?.toString(),
       fecha_confirmacion: getLocalISOStringWithMicroseconds(),
     };
-    this.alertaService
-      .update(alertaActualizada.id.toString(), alertaActualizada)
-      .subscribe({
-        next: (data) => {
-          console.log('Alertas actualizada');
-          this.cargarAlertas();
-          this.cerrarOverlay();
 
-          const nuevaBitacora = new Bitacora(
-            0,
-            alertaActualizada.id,
-            this.requiereEscalamiento() ? 'escalado' : 'atendido-enfermero',
-            this.nombreUsuario,
-            descripcion,
-            getLocalISOStringWithMicroseconds()
-          );
-          this.bitacoraService.add(nuevaBitacora).subscribe({
-            next: (response) => {
-              console.log('Bitácora enviada con éxito', response);
-              if (this.requiereEscalamiento()) {
-                this.alertSocketService.sendMessage('escalamiento');
+    this.swal
+      .confirm(
+        this.requiereEscalamiento()
+          ? 'Se enviará la alerta al médico con la información introducida y se guardará en la bitácora.'
+          : 'Se confirmará la alerta con la información introducida, y se guardará en la bitácora.',
+        this.requiereEscalamiento() ? '¿Enviar alerta?' : '¿Confirmar alerta?'
+      )
+      .then((result) => {
+        if (result) {
+          this.alertaService
+            .update(alertaActualizada.id.toString(), alertaActualizada)
+            .subscribe({
+              next: (data) => {
+                console.log('Alertas actualizada');
 
-                this.usuarioItems.forEach((usuario) => {
-                  const alertaEscalada = {
-                    ...alertaActualizada,
-                    correo_medico: usuario.correo, // Puedes obtenerlo dinámicamente si lo manejas en tu backend
-                    descripcion,
-                  };
+                const nuevaBitacora = new Bitacora(
+                  0,
+                  alertaActualizada.id,
+                  this.requiereEscalamiento()
+                    ? 'escalado'
+                    : 'atendido-enfermero',
+                  this.nombreUsuario,
+                  descripcion,
+                  getLocalISOStringWithMicroseconds()
+                );
+                this.bitacoraService.add(nuevaBitacora).subscribe({
+                  next: (response) => {
+                    console.log('Bitácora enviada con éxito', response);
+                    this.swal
+                      .success('Bitacora guardada correctamente.')
+                      .then((result) => {
+                        if (result) {
+                          this.cargarAlertas();
+                          this.cerrarOverlay();
+                        }
+                      });
+                    if (this.requiereEscalamiento()) {
+                      this.alertSocketService.sendMessage('escalamiento');
 
-                  this.alertaService.escalarAlerta(alertaEscalada).subscribe({
-                    next: (resp) => {
-                      console.log('Correo enviado al médico:', resp);
-                    },
-                    error: (err) => {
-                      console.error('Error al enviar correo al médico:', err);
-                    },
-                  });
+                      this.usuarioItems.forEach((usuario) => {
+                        const alertaEscalada = {
+                          ...alertaActualizada,
+                          correo_medico: usuario.correo, // Puedes obtenerlo dinámicamente si lo manejas en tu backend
+                          descripcion,
+                        };
+
+                        this.alertaService
+                          .escalarAlerta(alertaEscalada)
+                          .subscribe({
+                            next: (resp) => {
+                              console.log('Correo enviado al médico:', resp);
+                            },
+                            error: (err) => {
+                              console.error(
+                                'Error al enviar correo al médico:',
+                                err
+                              );
+                              this.swal.error(
+                                'Error al enviar correo al médico:'
+                              );
+                            },
+                          });
+                      });
+                    }
+                  },
+                  error: (err) => {
+                    console.error('Error al enviar la bitácora', err);
+                    this.swal.error('Error al enviar la bitácora');
+                  },
                 });
-              }
-            },
-            error: (err) => {
-              console.error('Error al enviar la bitácora', err);
-            },
-          });
-        },
-        error: (error) => {
-          console.log('Error al actualizar');
-        },
+              },
+              error: (error) => {
+                console.log('Error al actualizar');
+                this.swal.error('Error al actualizar la alerta');
+              },
+            });
+        }
       });
   }
   get f() {

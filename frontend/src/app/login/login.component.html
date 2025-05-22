@@ -20,9 +20,6 @@
                     [ngClass]="{ 'err': submitted && f['password'].errors }" />
                 <div *ngIf="submitted && f['password'].errors" class="error">
                     <small *ngIf="f['password'].errors?.['required']">La contraseña es obligatoria.</small>
-                    <small *ngIf="f['password'].errors?.['minlength']">
-                        La contraseña debe tener al menos 6 caracteres.
-                    </small>
                 </div>
             </div>
 
