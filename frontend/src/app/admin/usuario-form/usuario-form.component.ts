@@ -11,6 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SpinnerComponent } from '../../common/spinner/spinner.component';
 import { Usuario } from '../../core/models/usuario';
 import { getLocalISOStringWithMicroseconds } from '../../core/functions/functions';
+import { SweetAlertService } from '../../core/services/sweet-alert.service';
 
 @Component({
   selector: 'app-usuario-form',
@@ -38,7 +39,8 @@ export class UsuarioFormComponent implements OnInit {
     private fb: FormBuilder,
     private usuarioService: UsuarioService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private swal: SweetAlertService
   ) {
     this.sendForm = this.fb.group(
       {
@@ -62,6 +64,7 @@ export class UsuarioFormComponent implements OnInit {
       },
       error: (err) => {
         console.log('No se pudo obtener la lista de usuarios', err);
+        this.swal.error('No se pudo obtener la lista de usuarios');
       },
     });
     this.route.queryParams.subscribe((params) => {
@@ -107,6 +110,7 @@ export class UsuarioFormComponent implements OnInit {
     this.submitted = true;
     if (this.sendForm.invalid) {
       this.sendForm.markAllAsTouched();
+      this.swal.error('Por favor, rellena todos los campos correctamente.');
       return;
     }
 
@@ -119,6 +123,8 @@ export class UsuarioFormComponent implements OnInit {
 
     if (correoDuplicado.length !== 0) {
       this.error = 'El correo ya está registrado';
+      this.swal.error('Ya existe un usuario con este correo.');
+      this.loading = false;
       return;
     }
 
@@ -135,15 +141,20 @@ export class UsuarioFormComponent implements OnInit {
     if (this.editting) {
       this.usuarioService.update(this.currentId, nuevoUsuario).subscribe({
         next: (data) => {
-          console.log('El usuario se actualizó correctamente', data);
           setTimeout(() => {
             this.loading = false;
-            this.router.navigate(['/admin']);
+            console.log('El usuario se actualizó correctamente', data);
+            this.swal
+              .success(`El usuario se actualizó correctamente`)
+              .then((result) => {
+                this.router.navigate(['/admin']);
+              });
           }, 1000);
         },
         error: (err) => {
           setTimeout(() => {
             this.error = 'Ocurrió un error durante la actualización';
+            this.swal.error('Ocurrió un error durante la actualización');
             this.loading = false;
           }, 1000);
         },
@@ -151,15 +162,20 @@ export class UsuarioFormComponent implements OnInit {
     } else {
       this.usuarioService.add(nuevoUsuario).subscribe({
         next: (data) => {
-          console.log('El usuario se agregó correctamente', data);
           setTimeout(() => {
             this.loading = false;
-            this.router.navigate(['/admin']);
+            console.log('El usuario se agregó correctamente', data);
+            this.swal
+              .success('El usuario se agregó correctamente')
+              .then((result) => {
+                this.router.navigate(['/admin']);
+              });
           }, 1000);
         },
         error: (err) => {
           setTimeout(() => {
             this.error = 'Ocurrió un error al agregar el usuario';
+            this.swal.error('Ocurrió un error al agregar el usuario');
             this.loading = false;
           }, 1000);
         },

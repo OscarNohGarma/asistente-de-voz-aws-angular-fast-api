@@ -15,6 +15,7 @@ import { AlertSocketService } from '../../core/services/alert-socket.service';
 import { Subscription } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { getLocalISOStringWithMicroseconds } from '../../core/functions/functions';
+import { SweetAlertService } from '../../core/services/sweet-alert.service';
 
 @Component({
   selector: 'app-home-medico',
@@ -32,7 +33,8 @@ export class HomeMedicoComponent implements OnInit, OnDestroy {
     private alertSocketService: AlertSocketService,
     private http: HttpClient,
     private alertaService: AlertaService,
-    private ngZone: NgZone // Inyectamos NgZone
+    private ngZone: NgZone, // Inyectamos NgZone
+    private swal: SweetAlertService
   ) {}
 
   nombreUsuario: string = '';
@@ -217,82 +219,110 @@ export class HomeMedicoComponent implements OnInit, OnDestroy {
     });
   }
   handleBajaPaciente(paciente: any) {
-    const formData = new FormData();
+    this.swal
+      .confirm(
+        'Esta acción se registrará en la bitácora y no se puede deshacer.',
+        '¿Dar de baja a este paciente?'
+      )
+      .then((result) => {
+        if (result) {
+          const formData = new FormData();
 
-    // Llenamos todos los campos esperados por el backend
-    formData.append('nombre_completo', paciente.nombre_completo);
-    formData.append('edad', paciente.edad.toString());
-    formData.append('habitacion', paciente.habitacion);
-    formData.append('diagnostico', paciente.diagnostico);
-    formData.append('fecha_ingreso', paciente.fecha_ingreso); // Asegúrate que esté en formato correcto
-    formData.append('telefono_familiar', paciente.telefono_familiar);
-    formData.append('correo_familiar', paciente.correo_familiar);
-    formData.append('activo', 'false');
+          // Llenamos todos los campos esperados por el backend
+          formData.append('nombre_completo', paciente.nombre_completo);
+          formData.append('edad', paciente.edad.toString());
+          formData.append('habitacion', paciente.habitacion);
+          formData.append('diagnostico', paciente.diagnostico);
+          formData.append('fecha_ingreso', paciente.fecha_ingreso); // Asegúrate que esté en formato correcto
+          formData.append('telefono_familiar', paciente.telefono_familiar);
+          formData.append('correo_familiar', paciente.correo_familiar);
+          formData.append('activo', 'false');
 
-    this.loading = true;
+          this.loading = true;
 
-    this.http
-      .put(`${environment.apiUrl}/paciente/${paciente.id}`, formData)
-      .subscribe({
-        next: (response) => {
-          setTimeout(() => {
-            console.log('Paciente dado de baja:', response);
-            this.cargarPacientes();
-            this.pacienteSeleccionado = null;
-            this.loading = false;
-          }, 1000);
-          // Aquí podrías refrescar la lista o mostrar un mensaje
-        },
-        error: (error) => {
-          console.error('Error al dar de baja al paciente:', error);
-          this.loading = false;
-        },
+          this.http
+            .put(`${environment.apiUrl}/paciente/${paciente.id}`, formData)
+            .subscribe({
+              next: (response) => {
+                setTimeout(() => {
+                  this.loading = false;
+                  this.swal
+                    .success('Paciente dado de baja correctamente')
+                    .then((result) => {
+                      console.log('Paciente dado de baja:', response);
+                      this.cargarPacientes();
+                      this.pacienteSeleccionado = null;
+                    });
+                }, 1000);
+                // Aquí podrías refrescar la lista o mostrar un mensaje
+              },
+              error: (error) => {
+                this.loading = false;
+                this.swal.error('Error al dar de baja al paciente');
+                console.error('Error al dar de baja al paciente:', error);
+              },
+            });
+        }
       });
   }
   confirmarAtencion() {
     if (!this.bitacoraSeleccionada || !this.bitacoraSeleccionada.alerta) return;
-    this.loading = true;
-    const nuevaAlerta = {
-      ...this.bitacoraSeleccionada.alerta,
-      estado: 'confirmada',
-    };
+    this.swal
+      .confirm(
+        'Esta acción se registrará en la bitácora.',
+        '¿Confirmar atención?'
+      )
+      .then((result) => {
+        if (result) {
+          this.loading = true;
+          const nuevaAlerta = {
+            ...this.bitacoraSeleccionada.alerta,
+            estado: 'confirmada',
+          };
 
-    this.alertaService
-      .update(this.bitacoraSeleccionada.id_alerta, nuevaAlerta)
-      .subscribe({
-        next: (data) => {
-          console.log('Alerta actualizada', data);
-          const nuevaBitacora = new Bitacora(
-            0,
-            this.bitacoraSeleccionada.id_alerta,
-            'atendido-medico',
-            this.nombreUsuario,
-            this.bitacoraSeleccionada.descripcion,
-            getLocalISOStringWithMicroseconds()
-          );
-          console.log(nuevaBitacora);
+          this.alertaService
+            .update(this.bitacoraSeleccionada.id_alerta, nuevaAlerta)
+            .subscribe({
+              next: (data) => {
+                console.log('Alerta actualizada', data);
+                const nuevaBitacora = new Bitacora(
+                  0,
+                  this.bitacoraSeleccionada.id_alerta,
+                  'atendido-medico',
+                  this.nombreUsuario,
+                  this.bitacoraSeleccionada.descripcion,
+                  getLocalISOStringWithMicroseconds()
+                );
 
-          this.bitacoraService.add(nuevaBitacora).subscribe({
-            next: (response) => {
-              setTimeout(() => {
-                console.log('Bitácora enviada con éxito', response);
+                this.bitacoraService.add(nuevaBitacora).subscribe({
+                  next: (response) => {
+                    setTimeout(() => {
+                      this.loading = false;
+                      this.swal
+                        .success('Bitacora registrada con éxito.')
+                        .then((response) => {
+                          console.log('Bitácora enviada con éxito', response);
+                          this.cargarAlertas();
+                          this.cargarBitacoras();
+                          this.alertaSeleccionada = null;
+                          this.bitacoraSeleccionada = null;
+                        });
+                    }, 1000);
+                  },
+                  error: (err) => {
+                    this.loading = false;
+                    this.swal.error('Error al actualizar la alerta');
+                    console.error('Error al enviar la bitácora', err);
+                  },
+                });
+              },
+              error: (err) => {
                 this.loading = false;
-                this.cargarAlertas();
-                this.cargarBitacoras();
-                this.alertaSeleccionada = null;
-                this.bitacoraSeleccionada = null;
-              }, 1000);
-            },
-            error: (err) => {
-              console.error('Error al enviar la bitácora', err);
-              this.loading = false;
-            },
-          });
-        },
-        error: (err) => {
-          console.log('Error al actualizar la alerta', err);
-          this.loading = false;
-        },
+                this.swal.error('Error al actualizar la alerta');
+                console.log('Error al actualizar la alerta', err);
+              },
+            });
+        }
       });
   }
 }

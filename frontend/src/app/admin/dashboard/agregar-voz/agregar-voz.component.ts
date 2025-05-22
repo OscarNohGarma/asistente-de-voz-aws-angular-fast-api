@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { PacienteService } from '../../../core/services/paciente.service';
 import { Paciente } from '../../../core/models/paciente';
 import { SpinnerComponent } from '../../../common/spinner/spinner.component';
+import { SweetAlertService } from '../../../core/services/sweet-alert.service';
 
 @Component({
   selector: 'app-agregar-voz',
@@ -21,16 +22,17 @@ export class AgregarVozComponent implements OnInit {
 
   constructor(
     private audioService: AudioService,
-    private pacienteService: PacienteService
+    private pacienteService: PacienteService,
+    private swal: SweetAlertService
   ) {}
   ngOnInit(): void {
     this.pacienteService.getAll().subscribe({
       next: (data) => {
         this.listaPacientes = data;
-        console.log(this.listaPacientes);
       },
       error: (err) => {
         console.log('Error al obtener los pacientes', err);
+        this.swal.error('No se pudo obtener la lista de pacientes');
       },
     });
   }
@@ -70,32 +72,47 @@ export class AgregarVozComponent implements OnInit {
   submitted = false;
   onSubmit() {
     this.submitted = true;
-    this.loading = true;
     if (!this.pacienteId) {
       this.loading = false;
+      this.swal.error('Por favor, rellena los campos correctamente.');
       return;
     }
     if (!this.selectedFile || this.errorFile) {
       this.errorFile = 'Selecciona un archivo válido';
       this.loading = false;
+      this.swal.error(
+        'Por favor, selecciona un archivo para asociar al paciente.'
+      );
       return;
     }
 
     // Si todo está bien, subir el archivo
-    this.audioService.subirAudio(this.pacienteId, this.selectedFile).subscribe({
-      next: (res) => {
-        this.loading = false;
-        setTimeout(() => {
-          alert('Audio subido con éxito.');
-          window.location.reload();
-        }, 100);
+    this.swal
+      .confirm('¿Deseas asociar el audio seleccionado con este paciente?')
+      .then((result) => {
+        if (result) {
+          this.loading = true;
+          this.audioService
+            .subirAudio(this.pacienteId!, this.selectedFile!)
+            .subscribe({
+              next: (res) => {
+                this.loading = false;
+                setTimeout(() => {
+                  this.swal
+                    .success('Audio subido con éxito.')
+                    .then((result) => {
+                      window.location.reload();
+                    });
+                }, 100);
 
-        // console.log(res);
-      },
-      error: (err) => {
-        this.loading = false;
-        alert(err.message);
-      },
-    });
+                // console.log(res);
+              },
+              error: (err) => {
+                this.loading = false;
+                this.swal.error('Ocurrió un error al agregar el audio.');
+              },
+            });
+        }
+      });
   }
 }

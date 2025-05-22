@@ -10,6 +10,7 @@ import { BitacoraService } from '../core/services/bitacora.service';
 import { Bitacora } from '../core/models/bitacora';
 import { HeaderComponent } from '../common/header/header.component';
 import { CommonModule } from '@angular/common';
+import { SweetAlertService } from '../core/services/sweet-alert.service';
 
 @Component({
   selector: 'app-admin',
@@ -25,15 +26,22 @@ export class AdminComponent implements OnInit {
     private authService: AuthService,
     private alertSocketService: AlertSocketService,
     private alertaService: AlertaService,
-    private bitacoraService: BitacoraService
+    private bitacoraService: BitacoraService,
+    private swal: SweetAlertService
   ) {}
   ngOnInit(): void {
     const nombre = this.authService.getNombre();
     this.nombreUsuario = nombre ?? 'Usuario';
   }
   handleLogout() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+    this.swal
+      .confirm('¿Deseas cerrar sesión?', '¿Cerrar la sesión actual  ?')
+      .then((result) => {
+        if (result) {
+          this.authService.logout();
+          this.router.navigate(['/login']);
+        }
+      });
   }
   enviar() {
     // Aquí creamos una nueva alerta

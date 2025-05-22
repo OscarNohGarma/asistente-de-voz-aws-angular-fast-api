@@ -9,6 +9,7 @@ import { Paciente } from '../../core/models/paciente';
 import { Alerta } from '../../core/models/alertas';
 import { AlertaService } from '../../core/services/alerta.service';
 import { AgregarVozComponent } from './agregar-voz/agregar-voz.component';
+import { SweetAlertService } from '../../core/services/sweet-alert.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -27,7 +28,8 @@ export class DashboardComponent implements OnInit {
     private pacienteService: PacienteService,
     private alertaService: AlertaService,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private swal: SweetAlertService
   ) {}
 
   ngOnInit(): void {
@@ -51,6 +53,7 @@ export class DashboardComponent implements OnInit {
       },
       error: (err) => {
         console.log('No se pudo obtener la lista de usuarios', err);
+        this.swal.error('No se pudo obtener la lista de usuarios');
       },
     });
   }
@@ -61,6 +64,7 @@ export class DashboardComponent implements OnInit {
       },
       error: (err) => {
         console.log('No se pudo obtener la lista de pacientes', err);
+        this.swal.error('No se pudo obtener la lista de pacientes');
       },
     });
   }
@@ -68,10 +72,10 @@ export class DashboardComponent implements OnInit {
     this.alertaService.getAll().subscribe({
       next: (data) => {
         this.listaAlertas = data;
-        console.log(this.listaAlertas);
       },
       error: (err) => {
         console.log('No se pudo obtener la lista de pacientes', err);
+        this.swal.error('No se pudo obtener la lista de pacientes');
       },
     });
   }
@@ -86,18 +90,33 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/admin/agregar-usuario']);
   }
   handleDeleteUsuario(usuario: Usuario) {
-    const nuevoUsuario = { ...usuario, activo: false };
-    console.log(nuevoUsuario.id);
-    this.usuarioService
-      .update(nuevoUsuario.id.toString(), nuevoUsuario)
-      .subscribe({
-        next: (data) => {
-          console.log('Usuario actualizado correctamente', data);
-          this.cargarUsuarios();
-        },
-        error: (err) => {
-          console.log('Ocurrió un error al actualizar el usuario', err);
-        },
+    this.swal
+      .confirm(
+        'La acción no se puede deshacer.',
+        '¿Dar de baja a este usuario?'
+      )
+      .then((confirmed) => {
+        if (confirmed) {
+          const nuevoUsuario = { ...usuario, activo: false };
+          console.log(nuevoUsuario.id);
+          this.usuarioService
+            .update(nuevoUsuario.id.toString(), nuevoUsuario)
+            .subscribe({
+              next: (data) => {
+                setTimeout(() => {
+                  this.swal
+                    .success('El usuario se dio de baja correctamente')
+                    .then((result) => {
+                      this.cargarUsuarios();
+                    });
+                }, 500);
+              },
+              error: (err) => {
+                console.log('Ocurrió un error al actualizar el usuario', err);
+                this.swal.error('Ocurrió un error al actualizar el usuario');
+              },
+            });
+        }
       });
   }
   editarUsuario(usuario: Usuario) {

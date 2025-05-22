@@ -11,6 +11,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SpinnerComponent } from '../../../common/spinner/spinner.component';
+import { SweetAlertService } from '../../../core/services/sweet-alert.service';
 
 @Component({
   selector: 'app-paciente-form',
@@ -41,7 +42,8 @@ export class PacienteFormComponent implements OnInit {
     private http: HttpClient,
     private pacienteService: PacienteService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private swal: SweetAlertService
   ) {
     this.sendForm = this.fb.group({
       nombre_completo: ['', [Validators.required]],
@@ -104,8 +106,7 @@ export class PacienteFormComponent implements OnInit {
     this.submitted = true;
     if (this.sendForm.invalid) {
       this.sendForm.markAllAsTouched();
-      console.log('aborting');
-
+      this.swal.error('Por favor, rellena todos los campos correctamente.');
       return;
     }
     this.loading = true;
@@ -119,7 +120,11 @@ export class PacienteFormComponent implements OnInit {
     if (this.selectedFile) {
       formData.append('file', this.selectedFile, this.selectedFile.name);
     } else {
-      if (!this.editting) return;
+      if (!this.editting) {
+        this.loading = false;
+        this.swal.error('La foto de paciente es obligatoria.');
+        return;
+      }
     }
     if (this.editting) {
       this.http
@@ -129,10 +134,15 @@ export class PacienteFormComponent implements OnInit {
             setTimeout(() => {
               console.log('Paciente actualizado:', response);
               this.loading = false;
-              this.router.navigate(['home/medico']);
+              this.swal
+                .success('Paciente actualizado correctamente.')
+                .then((result) => {
+                  this.router.navigate(['home/medico']);
+                });
             }, 1000);
           },
           (error) => {
+            this.swal.error('Error al actualizar paciente.');
             console.error('Error al actualizar paciente:', error);
             this.loading = false;
           }
@@ -141,12 +151,16 @@ export class PacienteFormComponent implements OnInit {
       this.http.post(`${environment.apiUrl}/paciente`, formData).subscribe(
         (response) => {
           setTimeout(() => {
-            console.log('Paciente insertado:', response);
             this.loading = false;
-            this.router.navigate(['home/medico']);
+            this.swal
+              .success('Paciente dado de alta correctamente.')
+              .then((result) => {
+                this.router.navigate(['home/medico']);
+              });
           }, 1000);
         },
         (error) => {
+          this.swal.error('Error al dar de alta al paciente.');
           console.error('Error al insertar paciente:', error);
           this.loading = false;
         }
