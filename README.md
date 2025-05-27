@@ -6,12 +6,10 @@ Este proyecto tiene como objetivo asistir al personal médico en la atención de
 
 ## 🏗️ Arquitectura General
 
-- **Frontend**: Angular 16+
+- **Frontend**: Angular 18
 - **Backend**: FastAPI (Python)
-- **Reconocimiento de Voz**: OpenAI Whisper + optimizaciones
-- **Base de Datos**: ----
-- **Notificaciones**: ---
-- **Autenticación**: ---
+- **Reconocimiento de Voz**: AWS Speech-to-Text + optimizaciones
+- **Base de Datos**: PostgreSQL
 
 ---
 
@@ -26,7 +24,6 @@ Este proyecto tiene como objetivo asistir al personal médico en la atención de
 | 🩺 Panel médico y enfermería | Monitorea solicitudes, historial y confirma acciones |
 | 🔐 Login seguro por rol | Acceso diferenciado para médico, enfermero/a y administrador |
 | 🧾 Bitácora digital | Registro completo de eventos, alertas y respuestas |
-| 🧪 Pruebas de carga | Soporte para al menos 30 pacientes en tiempo real |
 
 ---
 
@@ -36,8 +33,7 @@ Este proyecto tiene como objetivo asistir al personal médico en la atención de
 📦 asistente-de-voz-whisper-angular-fast-api/
 ├── frontend/          # Angular app (UI, login, paneles)
 ├── backend/           # FastAPI (API REST, lógica, DB, auth)
-├── voice_ai/          # Whisper y scripts de detección
-└── docs/              # Documentación, requerimientos y flujos
+├── Model_IA/          # Whisper y scripts de detección
 ```
 
 ---
@@ -52,7 +48,7 @@ Este proyecto tiene como objetivo asistir al personal médico en la atención de
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/tuusuario/voice-care-system.git
+git clone https://github.com/OscarNohGarma/asistente-de-voz-aws-angular-fast-api.git
 cd voice-care-system
 ```
 
@@ -72,19 +68,11 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-#### AI (Reconocimiento de voz)
-```bash
-cd voice_ai
-pip install -r requirements.txt
-python start_listening.py
-```
-
 ---
 
 ## 📦 Despliegue
 
-- **Producción:** Se recomienda usar Docker para backend + frontend.
-- **Servidor GPU:** Whisper debe correr en una máquina con soporte para CUDA (NVIDIA).
+- Despliegue del proyecto de manera local
 
 ---
 
@@ -119,10 +107,10 @@ python start_listening.py
 
 ## 👨‍💻 Equipo de Desarrollo
 
-- **Frontend**: [Oscar Iván Noh Garma], [Pedro Raúl Chi Ek]
-- **Backend**: [Gildardo David Rubalcaba Cauich], [Ricardo Antonio Soto Beh]
-- **IA**: [Carlos Daniel Quintal Pech], [Alan Antony Puc Yam]
-- **Documentación y QA**: [Jesús Eduardo Huchin Yeh]
+- **Frontend**: [Oscar Iván Noh Garma - 7631], [Pedro Raúl Chi Ek - 7614]
+- **Backend**: [Gildardo David Rubalcaba Cauich - 7649], [Ricardo Antonio Soto Beh - 7653]
+- **IA**: [Carlos Daniel Quintal Pech - 7647], [Alan Antony Puc Yam - 7637]
+- **Documentación y QA**: [Jesús Eduardo Huchin Yeh - 7623]
 
 ---
 
