@@ -1,6 +1,6 @@
 # 🧠 Sistema de Reconocimiento de Voz para Pacientes Geriátricos
 
-Este proyecto tiene como objetivo asistir al personal médico en la atención de pacientes geriátricos mediante un sistema que reconoce palabras clave por voz y genera alertas automáticas. El sistema está dividido en tres módulos: frontend (Angular), backend (FastAPI) e inteligencia artificial (Whisper).
+Este proyecto tiene como objetivo asistir al personal médico en la atención de pacientes geriátricos mediante un sistema que reconoce palabras clave por voz y genera alertas automáticas. El sistema está dividido en tres módulos: frontend (Angular), backend (FastAPI) e inteligencia artificial (AWS Speech-to-Text).
 
 ---
 
